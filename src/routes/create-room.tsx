@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { db } from "../firebase";
+import { auth, db } from "../firebase";
 import { useNavigate } from "react-router-dom";
 import { FirebaseError } from "firebase/app";
 import { Error, Form, Input, Title, Wrapper } from "../components/auth-components";
-import { addDoc, collection, } from "firebase/firestore";
+import { addDoc, collection, doc, setDoc, } from "firebase/firestore";
 
 export default function CreateRoom() {
     const navigate = useNavigate();
@@ -27,19 +27,29 @@ export default function CreateRoom() {
     const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setError("");
-        const roomId = generateRandomId();
+        const roomId = generateRandomId().toString();
         if (isLoading || roomName === "") return;
         try {
             setLoading(true);
-            // await setDoc(doc(db, "rooms", roomNum), {
-            //     name: roomName,
-            //     players: [],
-            // });
-            await addDoc(collection(db, "rooms"), {
+            //데이터베이스에 방 생성하기
+            await setDoc(doc(db, "rooms", roomId), {
                 name: roomName,
-                roomId: roomId.toString(),
-                players: [],
+                roomId: roomId,
+                players: [{
+                    player: auth.currentUser?.displayName,
+                    numberOne: 0,
+                    numberTwo: 0,
+                    numberThree: 0,
+                    numberFour: 0,
+                }],
+                turn: "A",
             })
+            // await addDoc(collection(db, "rooms"), {
+            //     name: roomName,
+            //     roomId: roomId.toString(),
+            //     players: [],
+            //     turn: "A",
+            // })
             navigate(`/room/${roomId}`);
         } catch (e) {
             if (e instanceof FirebaseError) {
