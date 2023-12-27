@@ -43,7 +43,7 @@ export default function CreateAccount() {
             <Form onSubmit={onSubmit}>
                 <Input onChange={onChange} name="email" value={email} placeholder="Email" type="email" />
                 <Input onChange={onChange} name="password" value={password} placeholder="Password" type="password" required />
-                <Input type="submit" value={isLoading ? "Loading..." : "CreateAccount"} />
+                <Input type="submit" value={isLoading ? "Loading..." : "Login"} />
             </Form>
             {error !== "" ? <Error>{error}</Error> : null}
             <Switcher>

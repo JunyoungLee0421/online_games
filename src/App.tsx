@@ -10,6 +10,9 @@ import { useEffect, useState } from "react"
 import LoadingScreen from "./components/loading-screen"
 import { auth } from "./firebase"
 import ProtectedRoute from "./components/protected-route"
+import CreateRoom from "./routes/create-room"
+import Room from "./routes/room"
+import JoinRoom from "./routes/join-room"
 
 const router = createBrowserRouter([
   {
@@ -27,6 +30,19 @@ const router = createBrowserRouter([
         path: "profile",
         element:
           <Profile />,
+      },
+      {
+        path: "create",
+        element:
+          <CreateRoom />,
+      },
+      {
+        path: "join",
+        element: <JoinRoom />,
+      },
+      {
+        path: "/room/:roomId",
+        element: <Room />
       }
     ]
   },

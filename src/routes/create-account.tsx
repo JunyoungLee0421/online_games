@@ -1,9 +1,9 @@
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { useState } from "react";
 import { auth } from "../firebase";
-import { Form, Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { FirebaseError } from "firebase/app";
-import { Error, Input, Switcher, Title, Wrapper } from "../components/auth-components";
+import { Error, Input, Switcher, Title, Wrapper, Form } from "../components/auth-components";
 
 export default function CreateAccount() {
     const navigate = useNavigate();
@@ -12,6 +12,7 @@ export default function CreateAccount() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
+
     const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { target: { name, value } } = e;
         if (name === "name") {
@@ -56,5 +57,6 @@ export default function CreateAccount() {
             <Switcher>
                 Already have an account? <Link to="/login">Login &rarr;</Link>
             </Switcher>
-        </Wrapper>)
+        </Wrapper>
+    )
 }
