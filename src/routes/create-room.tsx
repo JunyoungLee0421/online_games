@@ -3,7 +3,7 @@ import { auth, db } from "../firebase";
 import { useNavigate } from "react-router-dom";
 import { FirebaseError } from "firebase/app";
 import { Error, Form, Input, Title, Wrapper } from "../components/auth-components";
-import { addDoc, collection, doc, setDoc, } from "firebase/firestore";
+import { doc, setDoc, } from "firebase/firestore";
 
 export default function CreateRoom() {
     const navigate = useNavigate();

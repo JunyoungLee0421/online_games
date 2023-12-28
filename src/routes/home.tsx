@@ -1,6 +1,5 @@
 import { Link } from "react-router-dom";
 import { Switcher, Wrapper } from "../components/auth-components";
-import { auth } from "../firebase";
 
 export default function Home() {
     return (

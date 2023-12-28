@@ -3,7 +3,7 @@ import { auth, db } from "../firebase";
 import { useNavigate } from "react-router-dom";
 import { FirebaseError } from "firebase/app";
 import { Error, Form, Input, Title, Wrapper } from "../components/auth-components";
-import { arrayUnion, collection, doc, getDocs, query, setDoc, updateDoc, where } from "firebase/firestore";
+import { arrayUnion, collection, doc, getDocs, query, updateDoc, where } from "firebase/firestore";
 
 export default function JoinRoom() {
     const navigate = useNavigate();
