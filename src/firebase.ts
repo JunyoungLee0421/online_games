@@ -1,7 +1,7 @@
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
-
+import { getDatabase } from "firebase/database";
 const firebaseConfig = {
     apiKey: "AIzaSyBUI77ix2FBkt_y0qh9uHg9iIeDBa0iRUg",
     authDomain: "onlinegames-d7bef.firebaseapp.com",
@@ -15,4 +15,5 @@ const app = initializeApp(firebaseConfig);
 
 const db = getFirestore(app);
 const auth = getAuth(app)
-export { db, auth };
+const realTimeDB = getDatabase(app);
+export { db, auth, realTimeDB };

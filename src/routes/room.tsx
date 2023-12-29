@@ -4,39 +4,40 @@ import { FirebaseError } from "firebase/app";
 import styled from "styled-components";
 
 const Wrapper = styled.div`
-height: 100%;
-display: flex;
-flex-direction: row;
-align-items: center;
-width: 900px;
-padding: 50px 0px;
+    height: 100%;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    width: 900px;
+    padding: 50px 0px;
 `;
 
 const Form = styled.form`
-margin-top: 50px;
-margin-bottom: 10px;
-display: flex;
-flex-direction: row;
-gap: 10px;
-width: 100%;
+    margin-top: 50px;
+    margin-bottom: 10px;
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+    width: 100%;
+    justify-content: center;
 `;
 
 const Input = styled.input`
-padding: 10px 20px;
-border-radius: 50px;
-border: none;
-width: 100%;
-font-size: 16px;
-&[type="submit"]{cursor: pointer; &:hover{opacity: 0.8;}};
-//delete updown arrows
-&::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
-}
-&::-webkit-outer-spin-button{
-  -webkit-appearance: none; 
-  margin: 0; 
-}  
+    padding: 10px 20px;
+    border-radius: 50px;
+    border: none;
+    width: 100%;
+    font-size: 16px;
+    &[type="submit"]{cursor: pointer; &:hover{opacity: 0.8;}};
+    //delete updown arrows
+    &::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+    &::-webkit-outer-spin-button{
+    -webkit-appearance: none; 
+    margin: 0; 
+    }  
 `;
 
 const Title = styled.h1`
@@ -92,6 +93,7 @@ export default function Room() {
     const [numThree, setNumThree] = useState(0);
     const [numFour, setNumFour] = useState(0);
 
+
     //update player's number
     const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { target: { name, value } } = e;
@@ -133,6 +135,23 @@ export default function Room() {
     }
 
     //append result & switch turn
+    const onCompare = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        setError("");
+        if (isLoading) return;
+        try {
+            setLoading(true);
+        } catch (e) {
+            if (e instanceof FirebaseError) {
+                setError(e.message);
+            }
+        }
+        finally {
+            setLoading(false);
+        }
+    }
+
+    //check if the user got correct answer
     const onCheck = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setError("");
@@ -167,19 +186,64 @@ export default function Room() {
                     <Input onChange={onChange} name="numFour" value={numFour} type="number" pattern="[0-9]" required />
                     <Input type="submit" value={isLoading ? "Loading..." : "Submit Numbers"} />
                 </Form>
-
                 <H1>Compare Number</H1>
                 <Form>
-                    <Input onChange={onChange} name="numThree" value={numThree} type="number" pattern="[0-9]" required />
-                    <Input onChange={onChange} name="numFour" value={numFour} type="number" pattern="[0-9]" required />
+                    <label htmlFor="playerRed">Player Red's : </label>
+                    <select name="options" id="playerRed">
+                        <option value="A">A</option>
+                        <option value="B">B</option>
+                        <option value="C">C</option>
+                        <option value="D">D</option>
+                    </select>
+                    <label htmlFor="playerBlue">Player Blue's : </label>
+                    <select name="options" id="playerBlue">
+                        <option value="A">A</option>
+                        <option value="B">B</option>
+                        <option value="C">C</option>
+                        <option value="D">D</option>
+                    </select>
                 </Form>
+                <H1>Or</H1>
                 <Form>
+                    <label htmlFor="playerRed">Player Red's : </label>
+                    <select name="options" id="playerRed">
+                        <option value="A">A</option>
+                        <option value="B">B</option>
+                        <option value="C">C</option>
+                        <option value="D">D</option>
+                    </select>
+                    <p> + </p>
+                    <select name="options" id="playerRed">
+                        <option value="A">A</option>
+                        <option value="B">B</option>
+                        <option value="C">C</option>
+                        <option value="D">D</option>
+                    </select>
+                    <label htmlFor="playerRed">Player Blue's : </label>
+                    <select name="options" id="playerRed">
+                        <option value="A">A</option>
+                        <option value="B">B</option>
+                        <option value="C">C</option>
+                        <option value="D">D</option>
+                    </select>
+                    <p> + </p>
+                    <select name="options" id="playerRed">
+                        <option value="A">A</option>
+                        <option value="B">B</option>
+                        <option value="C">C</option>
+                        <option value="D">D</option>
+                    </select>
+                </Form>
+                <Form onSubmit={onCompare}>
+                    <Input type="submit" value={isLoading ? "Loading..." : "Compare"} />
+                </Form>
+
+                <H1>Guess Opponent's Number</H1>
+                <Form onSubmit={onCheck}>
                     <Input onChange={onChange} name="numOne" value={numOne} type="number" pattern="[0-9]" required />
                     <Input onChange={onChange} name="numTwo" value={numTwo} type="number" pattern="[0-9]" required />
                     <Input onChange={onChange} name="numThree" value={numThree} type="number" pattern="[0-9]" required />
                     <Input onChange={onChange} name="numFour" value={numFour} type="number" pattern="[0-9]" required />
-                </Form>
-                <Form onSubmit={onCheck}>
                     <Input type="submit" value={isLoading ? "Loading..." : "Check"} />
                 </Form>
             </SelectionDiv>
