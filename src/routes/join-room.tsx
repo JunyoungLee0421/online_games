@@ -1,11 +1,9 @@
 import { useState } from "react";
-import { auth, db, realTimeDB } from "../firebase";
+import { auth, realTimeDB } from "../firebase";
 import { useNavigate } from "react-router-dom";
 import { FirebaseError } from "firebase/app";
 import { Error, Form, Input, Title, Wrapper } from "../components/auth-components";
-import { arrayUnion, collection, doc, getDocs, query, updateDoc, where } from "firebase/firestore";
 import { onValue, ref, set } from "firebase/database";
-import Room from "./room";
 
 export default function JoinRoom() {
     const navigate = useNavigate();
@@ -39,33 +37,20 @@ export default function JoinRoom() {
                         console.log(room);
                         if (roomId === room) {
                             console.log("Room found!");
+                            //set player two info
+                            set(ref(realTimeDB, "rooms/" + roomId + "/players/playerTwo"), {
+                                playerName: auth.currentUser?.displayName,
+                            });
+                            //go to room
+                            navigate(`/room/${roomId}`);
+                            //finish function
+                            return;
                         } else {
                             console.log("Room not found!");
                         }
                     }
                 }
             });
-            // //데이터베이스에서 룸 확인하기
-            // const q = query(collection(db, "rooms"), where("roomId", "==", roomId));
-            // const querySnapshot = await getDocs(q);
-            // //같은 아이디의 방이 있으면 이동, 아니면 에러메세지
-            // if (querySnapshot.empty) {
-            //     setError("Room not found");
-            // } else {
-            //     //데이터베이스에 유저 정보 추가하기
-            //     const docRef = doc(db, "rooms", roomId);
-            //     await updateDoc(docRef, {
-            //         players: arrayUnion({
-            //             player: auth.currentUser?.displayName,
-            //             numberOne: 1,
-            //             numberTwo: 1,
-            //             numberThree: 1,
-            //             numberFour: 1,
-            //         })
-            //     });
-            //     //이동
-            //     navigate(`/room/${roomId}`);
-            // }
         } catch (e) {
             if (e instanceof FirebaseError) {
                 setError(e.message);

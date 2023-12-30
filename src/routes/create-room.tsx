@@ -1,9 +1,8 @@
 import { useState } from "react";
-import { auth, db, realTimeDB } from "../firebase";
+import { auth, realTimeDB } from "../firebase";
 import { useNavigate } from "react-router-dom";
 import { FirebaseError } from "firebase/app";
 import { Error, Form, Input, Title, Wrapper } from "../components/auth-components";
-import { doc, setDoc, } from "firebase/firestore";
 import { ref, set } from "firebase/database";
 
 export default function CreateRoom() {
@@ -33,31 +32,16 @@ export default function CreateRoom() {
         try {
             setLoading(true);
             //데이터베이스에 방 생성하기
-            // await setDoc(doc(db, "rooms", roomId), {
-            //     name: roomName,
-            //     roomId: roomId,
-            //     players: [{
-            //         player: auth.currentUser?.displayName,
-            //         numberOne: 0,
-            //         numberTwo: 0,
-            //         numberThree: 0,
-            //         numberFour: 0,
-            //     }],
-            //     turn: "A",
-            // })
             await set(ref(realTimeDB, "rooms/" + roomId), {
                 name: roomName,
-                roomId: roomId.toString(),
-                players: [],
+                players: {
+                    playerOne: {
+                        playerName: auth.currentUser?.displayName
+                    }
+                },
                 turn: "A",
             });
-            // await addDoc(collection(db, "rooms"), {
-            //     name: roomName,
-            //     roomId: roomId.toString(),
-            //     players: [],
-            //     turn: "A",
-            // })
-            // navigate(`/room/${roomId}`);
+            navigate(`/room/${roomId}`);
         } catch (e) {
             if (e instanceof FirebaseError) {
                 setError(e.message);
