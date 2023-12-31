@@ -34,12 +34,10 @@ export default function CreateRoom() {
             //데이터베이스에 방 생성하기
             await set(ref(realTimeDB, "rooms/" + roomId), {
                 name: roomName,
-                players: {
-                    playerOne: {
-                        playerName: auth.currentUser?.displayName
-                    }
-                },
                 turn: "A",
+            });
+            await set(ref(realTimeDB, "rooms/" + roomId + "/players/" + "player" + auth.currentUser?.displayName), {
+                playerName: auth.currentUser?.displayName,
             });
             navigate(`/room/${roomId}`);
         } catch (e) {

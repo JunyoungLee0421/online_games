@@ -1,7 +1,11 @@
 import { useState } from "react";
 import { useParams } from "react-router-dom";
 import { FirebaseError } from "firebase/app";
-import styled from "styled-components";
+import styled, { css } from "styled-components";
+import { auth, realTimeDB } from "../firebase";
+import { off, onChildChanged, onValue, ref, set, update } from "firebase/database";
+import SubmitNumber from "../components/submit-number";
+import CompareNumber from "../components/compare-numbers";
 
 const Wrapper = styled.div`
     height: 100%;
@@ -38,22 +42,24 @@ const Input = styled.input`
     -webkit-appearance: none; 
     margin: 0; 
     }  
+
+    ${(props) =>
+        props.disabled &&
+        css`
+      background-color: #eee;
+      color: #aaa;
+      /* Add any other styles for the disabled state */
+    `}
+    
 `;
 
 const Title = styled.h1`
-font-size: 24px;
+    font-size: 24px;
 `;
 
 const Error = styled.span`
-font-weight: 600;
-color: tomato;
-`;
-
-const Switcher = styled.span`
-    margin-top : 20px;
-    a {
-        color: #1d9bf0;
-    }
+    font-weight: 600;
+    color: tomato;
 `;
 
 const SelectionDiv = styled.div`
@@ -77,24 +83,35 @@ const HintDiv = styled.div`
 `;
 
 const H1 = styled.h1`
+`;
+
+const Line = styled.div`
+    border: 1px solid white;
+    width: 420px;
     margin-top: 20px;
-    font-size: 18px;
+    margin-bottom: 20px;
 `;
 
 export default function Room() {
     const { roomId } = useParams();
+
     const [isLoading, setLoading] = useState(false);
-    const [isMyTurn, setTurn] = useState(false);
-    // const [turn, setTurn] = useState("A");
-    const [error, setError] = useState("");
 
     const [numOne, setNumOne] = useState(0);
     const [numTwo, setNumTwo] = useState(0);
     const [numThree, setNumThree] = useState(0);
     const [numFour, setNumFour] = useState(0);
 
+    const [error, setError] = useState("");
 
-    //update player's number
+    const [opponentPlayer, setOpponentPlayer] = useState('');
+
+    // submit을 누르면 상대를 지정 => 미래에 고려해야할것 : 여러명일때는 어떻게..?
+    // compare을 누르면 get으로 상대 번호를 받아온다음에 로컬에 저장해놓으면 onValue로 매번 안받아올수있음.
+    // 그럼 compare 눌렀을때 enemyNumber에 값이 없으면 받아오고 있으면 컴페어만 진행.
+    // Result는 onValue로 계속 받아와야할듯? 양쪽에 필요하니까
+
+    //update player's number when on change
     const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { target: { name, value } } = e;
         if (name === "numOne") {
@@ -105,49 +122,6 @@ export default function Room() {
             setNumThree(parseInt(value));
         } else if (name === "numFour") {
             setNumFour(parseInt(value));
-        }
-    }
-
-    //check if numbers add up to 20
-    //push the numbers to database
-    const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        const addition = numOne + numTwo + numThree + numFour;
-        if (isLoading) return;
-        if (addition != 20) {
-            setError("Numbers should add up to 20");
-            return;
-        }
-
-        try {
-            setLoading(true);
-            //update numbers in database
-        } catch (e) {
-            if (e instanceof FirebaseError) {
-                setError(e.message);
-            }
-        }
-        finally {
-            //set loading to false
-            setLoading(false);
-            //disable submit button
-        }
-    }
-
-    //append result & switch turn
-    const onCompare = async (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        setError("");
-        if (isLoading) return;
-        try {
-            setLoading(true);
-        } catch (e) {
-            if (e instanceof FirebaseError) {
-                setError(e.message);
-            }
-        }
-        finally {
-            setLoading(false);
         }
     }
 
@@ -167,6 +141,15 @@ export default function Room() {
             setLoading(false);
         }
     }
+
+    //event listener for results
+    const resultRef = ref(realTimeDB, "rooms/" + roomId + "/results");
+    off(resultRef);
+    onChildChanged(resultRef, (snapshot) => {
+        const data = snapshot.val();
+        console.log(data);
+        //updateReuslt(data);
+    })
     //winning condition
 
     //delete data on firestore and redirect to home
@@ -178,66 +161,24 @@ export default function Room() {
         <Wrapper>
             <SelectionDiv>
                 <Title>You are in room : {roomId}</Title>
-                <H1>Select Your Secret Number</H1>
-                <Form onSubmit={onSubmit}>
-                    <Input onChange={onChange} name="numOne" value={numOne} type="number" pattern="[0-9]" required />
-                    <Input onChange={onChange} name="numTwo" value={numTwo} type="number" pattern="[0-9]" required />
-                    <Input onChange={onChange} name="numThree" value={numThree} type="number" pattern="[0-9]" required />
-                    <Input onChange={onChange} name="numFour" value={numFour} type="number" pattern="[0-9]" required />
-                    <Input type="submit" value={isLoading ? "Loading..." : "Submit Numbers"} />
-                </Form>
-                <H1>Compare Number</H1>
-                <Form>
-                    <label htmlFor="playerRed">Player Red's : </label>
-                    <select name="options" id="playerRed">
-                        <option value="A">A</option>
-                        <option value="B">B</option>
-                        <option value="C">C</option>
-                        <option value="D">D</option>
-                    </select>
-                    <label htmlFor="playerBlue">Player Blue's : </label>
-                    <select name="options" id="playerBlue">
-                        <option value="A">A</option>
-                        <option value="B">B</option>
-                        <option value="C">C</option>
-                        <option value="D">D</option>
-                    </select>
-                </Form>
-                <H1>Or</H1>
-                <Form>
-                    <label htmlFor="playerRed">Player Red's : </label>
-                    <select name="options" id="playerRed">
-                        <option value="A">A</option>
-                        <option value="B">B</option>
-                        <option value="C">C</option>
-                        <option value="D">D</option>
-                    </select>
-                    <p> + </p>
-                    <select name="options" id="playerRed">
-                        <option value="A">A</option>
-                        <option value="B">B</option>
-                        <option value="C">C</option>
-                        <option value="D">D</option>
-                    </select>
-                    <label htmlFor="playerRed">Player Blue's : </label>
-                    <select name="options" id="playerRed">
-                        <option value="A">A</option>
-                        <option value="B">B</option>
-                        <option value="C">C</option>
-                        <option value="D">D</option>
-                    </select>
-                    <p> + </p>
-                    <select name="options" id="playerRed">
-                        <option value="A">A</option>
-                        <option value="B">B</option>
-                        <option value="C">C</option>
-                        <option value="D">D</option>
-                    </select>
-                </Form>
-                <Form onSubmit={onCompare}>
-                    <Input type="submit" value={isLoading ? "Loading..." : "Compare"} />
-                </Form>
 
+                <Line></Line>
+                <H1>Select Your Secret Number</H1>
+                <SubmitNumber roomId={roomId} />
+                {/* <Form onSubmit={onSubmit}>
+                    <Input onChange={onChange} disabled={isSubmitted} name="numOne" value={numOne} type="number" pattern="[0-9]" required />
+                    <Input onChange={onChange} disabled={isSubmitted} name="numTwo" value={numTwo} type="number" pattern="[0-9]" required />
+                    <Input onChange={onChange} disabled={isSubmitted} name="numThree" value={numThree} type="number" pattern="[0-9]" required />
+                    <Input onChange={onChange} disabled={isSubmitted} name="numFour" value={numFour} type="number" pattern="[0-9]" required />
+                    <Input disabled={isSubmitted} type="submit" value={isLoading ? "Loading..." : "Submit Numbers"} />
+                </Form>
+                {error !== "" ? <Error>{error}</Error> : null} */}
+
+                <Line></Line>
+                <H1>Compare Number</H1>
+                <CompareNumber roomId={roomId} />
+
+                <Line></Line>
                 <H1>Guess Opponent's Number</H1>
                 <Form onSubmit={onCheck}>
                     <Input onChange={onChange} name="numOne" value={numOne} type="number" pattern="[0-9]" required />

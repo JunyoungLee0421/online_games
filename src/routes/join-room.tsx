@@ -25,6 +25,7 @@ export default function JoinRoom() {
         try {
             setLoading(true);
             const Roomref = ref(realTimeDB, "rooms/");
+            //change this to get method, because it only needs one.
             onValue(Roomref, (snapshot) => {
                 const data = snapshot.val();
                 const roomIds = Object.keys(data);
@@ -38,7 +39,7 @@ export default function JoinRoom() {
                         if (roomId === room) {
                             console.log("Room found!");
                             //set player two info
-                            set(ref(realTimeDB, "rooms/" + roomId + "/players/playerTwo"), {
+                            set(ref(realTimeDB, "rooms/" + roomId + "/players/player" + auth.currentUser?.displayName), {
                                 playerName: auth.currentUser?.displayName,
                             });
                             //go to room
