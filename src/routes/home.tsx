@@ -1,10 +1,40 @@
-import { auth } from "../firebase"
+import { useNavigate } from "react-router-dom";
+import styled from "styled-components"
+
+export const Wrapper = styled.div`
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 420px;
+  padding: 50px 0px;
+  gap: 10px;
+`;
+
+const Button = styled.button`
+  padding: 10px 20px;
+  border-radius: 50px;
+  border: none;
+  width: 100%;
+  font-size: 16px;
+  cursor: pointer;
+    &:hover {
+      opacity: 0.8;
+    }
+`;
 
 export default function Home() {
-    const logOut = () => {
-        auth.signOut();
-    };
+    const navigate = useNavigate();
+    const createRoom = () => {
+        navigate("/create-room")
+    }
+    const joinRoom = () => {
+        navigate("/join-room")
+    }
     return (
-        <h1><button onClick={logOut}>Logout</button></h1>
+        <Wrapper>
+            <Button onClick={createRoom}>Create a Room</Button>
+            <Button onClick={joinRoom}>Join a Room</Button>
+        </Wrapper>
     )
 }

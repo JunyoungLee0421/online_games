@@ -10,6 +10,8 @@ import { useEffect, useState } from "react";
 import LoadingScreen from "./components/loading-screen";
 import { auth } from "./firebase";
 import ProtectedRoute from "./components/protected-route";
+import CreateRoom from "./routes/create-room";
+import JoinRoom from "./routes/join-room";
 
 const router = createBrowserRouter([
   {
@@ -27,6 +29,14 @@ const router = createBrowserRouter([
       {
         path: "profile",
         element: <Profile />
+      },
+      {
+        path: "create-room",
+        element: <CreateRoom />
+      },
+      {
+        path: "join-room",
+        element: <JoinRoom />
       }
     ],
   },
@@ -46,8 +56,8 @@ ${reset};
   box-sizing: border-box;
 }
 body {
-  background-color: black;
-  color: white;
+  background-color: white;
+  color: black;
   font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
 }
 `;
