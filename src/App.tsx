@@ -12,6 +12,7 @@ import { auth } from "./firebase";
 import ProtectedRoute from "./components/protected-route";
 import CreateRoom from "./routes/create-room";
 import JoinRoom from "./routes/join-room";
+import GameRoom from "./routes/game-room";
 
 const router = createBrowserRouter([
   {
@@ -37,6 +38,10 @@ const router = createBrowserRouter([
       {
         path: "join-room",
         element: <JoinRoom />
+      },
+      {
+        path: "game-room/:room_id",
+        element: <GameRoom />
       }
     ],
   },
