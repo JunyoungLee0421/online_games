@@ -1,8 +1,9 @@
-import { child, get, ref } from "firebase/database"
-import { database } from "../firebase"
+import { child, get, ref, update } from "firebase/database"
+import { auth, database } from "../firebase"
 import { useEffect, useState } from "react";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
+import { FirebaseError } from "firebase/app";
 
 const Wrapper = styled.div`
   height: 100%;
@@ -25,9 +26,12 @@ const Button = styled.button`
       opacity: 0.8;
     }
 `;
-
-export const Title = styled.h1`
+const Title = styled.h1`
   font-size: 42px;
+`;
+const Error = styled.span`
+  font-weight: 600;
+  color: tomato;
 `;
 
 interface Room {
@@ -38,6 +42,8 @@ interface Room {
 export default function JoinRoom() {
     const navigate = useNavigate();
     const [rooms, setRooms] = useState<Room[]>([]);
+    const [error, setError] = useState("");
+    const [isLoading, setLoading] = useState(false);
 
     useEffect(() => {
         const dbRef = ref(database);
@@ -57,12 +63,38 @@ export default function JoinRoom() {
         });
     }, []);
 
+    const onRoomClicked = async (roomId: String) => {
+        setError("");
+        try {
+            setLoading(true);
+            //add user to the members list of the room
+            const dbRef = ref(database, 'rooms/' + roomId);
+            await update(dbRef, {
+                guest: auth.currentUser?.displayName
+            }).then(() => {
+                console.log('added member successfully');
+            }).catch((error) => {
+                console.log(error);
+            })
+            //go to room with room id
+            navigate("/game-room/" + roomId);
+        } catch (e) {
+            //show error
+            if (e instanceof FirebaseError) {
+                setError(e.message);
+            }
+        } finally {
+            setLoading(false);
+        }
+    }
+
     return (
         <Wrapper>
             <Title>Join a Room</Title>
             {rooms.map(room => (
-                <Button key={room.id} onClick={() => navigate("/game-room/" + room.id)}>{room.name}</Button>
+                <Button key={room.id} onClick={() => onRoomClicked(room.id)}>{isLoading ? "Connecting..." : room.name}</Button>
             ))}
+            {error !== "" ? <Error>{error}</Error> : null}
         </Wrapper>
     );
 }
