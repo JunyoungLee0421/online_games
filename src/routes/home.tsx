@@ -24,17 +24,17 @@ const Button = styled.button`
 `;
 
 export default function Home() {
-    const navigate = useNavigate();
-    const createRoom = () => {
-        navigate("/create-room")
-    }
-    const joinRoom = () => {
-        navigate("/join-room")
-    }
-    return (
-        <Wrapper>
-            <Button onClick={createRoom}>Create a Room</Button>
-            <Button onClick={joinRoom}>Join a Room</Button>
-        </Wrapper>
-    )
+  const navigate = useNavigate();
+  const createRoom = () => {
+    navigate("/create-room")
+  }
+  const joinRoom = () => {
+    navigate("/join-room")
+  }
+  return (
+    <Wrapper>
+      <Button onClick={createRoom}>Create a Room</Button>
+      <Button onClick={joinRoom}>Join a Room</Button>
+    </Wrapper>
+  )
 }
