@@ -13,11 +13,18 @@ const Wrapper = styled.div`
 `;
 
 const FormWrapper = styled.div`
+  width: 400px;
   border: 1px solid black;
+  padding: 10px;
+  margin-right: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px; /* 위아래 간격 */
 `;
 
 const HintWrapper = styled.div`
   border: 1px solid black;
+  margin-left: 10px;
 `;
 
 const Table = styled.table`

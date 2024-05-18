@@ -1,6 +1,21 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
 
+
+const Wrapper = styled.div`
+
+`;
+
+const SelectionWrapper = styled.div`
+    display: flex;
+    justify-content: space-between;
+`;
+
+const ButtonWrapper = styled.div`
+    align-items: center;
+    margin: 10px;
+`;
+
 // 드롭다운 스타일 정의
 const Select = styled.select`
   padding: 8px;
@@ -54,42 +69,47 @@ const CompareTwoForm: React.FC<DropdownFormProps> = ({ buttonText, onButtonClick
     };
 
     return (
-        <div>
-            {/* Player A의 숫자 선택 */}
-            <P>Player A's number</P>
-            <Select value={playerANumbers[0]} onChange={(e) => setPlayerANumbers([e.target.value, playerANumbers[1]])}>
-                <Option value=""></Option>
-                {[...Array(9)].map((_, index) => (
-                    <Option key={index + 1} value={String(index + 1)}>{index + 1}</Option>
-                ))}
-            </Select>
-            {' + '}
-            <Select value={playerANumbers[1]} onChange={(e) => setPlayerANumbers([playerANumbers[0], e.target.value])}>
-                <Option value=""></Option>
-                {[...Array(9)].map((_, index) => (
-                    <Option key={index + 1} value={String(index + 1)}>{index + 1}</Option>
-                ))}
-            </Select>
+        <Wrapper>
+            <SelectionWrapper>
+                <ButtonWrapper>
+                    {/* Player A의 숫자 선택 */}
+                    <P>Player A's number</P>
+                    <Select value={playerANumbers[0]} onChange={(e) => setPlayerANumbers([e.target.value, playerANumbers[1]])}>
+                        <Option value=""></Option>
+                        {[...Array(9)].map((_, index) => (
+                            <Option key={index + 1} value={String(index + 1)}>{index + 1}</Option>
+                        ))}
+                    </Select>
+                    {' + '}
+                    <Select value={playerANumbers[1]} onChange={(e) => setPlayerANumbers([playerANumbers[0], e.target.value])}>
+                        <Option value=""></Option>
+                        {[...Array(9)].map((_, index) => (
+                            <Option key={index + 1} value={String(index + 1)}>{index + 1}</Option>
+                        ))}
+                    </Select>
+                </ButtonWrapper>
+                <ButtonWrapper>
+                    {/* Player B의 숫자 선택 */}
+                    <P>Player B's number</P>
+                    <Select value={playerBNumbers[0]} onChange={(e) => setPlayerBNumbers([e.target.value, playerBNumbers[1]])}>
+                        <Option value=""></Option>
+                        {[...Array(9)].map((_, index) => (
+                            <Option key={index + 1} value={String(index + 1)}>{index + 1}</Option>
+                        ))}
+                    </Select>
+                    {' + '}
+                    <Select value={playerBNumbers[1]} onChange={(e) => setPlayerBNumbers([playerBNumbers[0], e.target.value])}>
+                        <Option value=""></Option>
+                        {[...Array(9)].map((_, index) => (
+                            <Option key={index + 1} value={String(index + 1)}>{index + 1}</Option>
+                        ))}
+                    </Select>
+                </ButtonWrapper>
 
-            {/* Player B의 숫자 선택 */}
-            <P>Player B's number</P>
-            <Select value={playerBNumbers[0]} onChange={(e) => setPlayerBNumbers([e.target.value, playerBNumbers[1]])}>
-                <Option value=""></Option>
-                {[...Array(9)].map((_, index) => (
-                    <Option key={index + 1} value={String(index + 1)}>{index + 1}</Option>
-                ))}
-            </Select>
-            {' + '}
-            <Select value={playerBNumbers[1]} onChange={(e) => setPlayerBNumbers([playerBNumbers[0], e.target.value])}>
-                <Option value=""></Option>
-                {[...Array(9)].map((_, index) => (
-                    <Option key={index + 1} value={String(index + 1)}>{index + 1}</Option>
-                ))}
-            </Select>
-
+            </SelectionWrapper>
             {/* 버튼 */}
             <Button onClick={handleButtonClick}>{buttonText}</Button>
-        </div>
+        </Wrapper>
     );
 };
 

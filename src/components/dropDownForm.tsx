@@ -1,6 +1,17 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
 
+const Wrapper = styled.div`
+
+`;
+
+const ButtonWrapper = styled.div`
+    display: flex;
+    justify-content: space-between;
+    margin: 10px;
+`;
+
+
 // 드롭다운 스타일 정의
 const Select = styled.select`
   padding: 8px;
@@ -52,19 +63,23 @@ const DropdownForm: React.FC<DropdownFormProps> = ({ buttonText, onButtonClick }
     };
 
     return (
-        <div>
-            {/* 드롭다운 메뉴 4개 */}
-            {[...Array(4)].map((_, index) => (
-                <Select key={index} value={selectedOptions[index]} onChange={(event) => handleOptionChange(index, event)}>
-                    <Option value="">{String.fromCharCode(65 + index)}</Option>
-                    {[...Array(9)].map((_, optionIndex) => (
-                        <Option key={optionIndex + 1} value={String(optionIndex + 1)}>{optionIndex + 1}</Option>
-                    ))}
-                </Select>
-            ))}
+        <Wrapper>
+            <ButtonWrapper>
+                {/* 드롭다운 메뉴 4개 */}
+                {[...Array(4)].map((_, index) => (
+                    <Select key={index} value={selectedOptions[index]} onChange={(event) => handleOptionChange(index, event)}>
+                        <Option value=""></Option>
+                        {/* {String.fromCharCode(65 + index)} */}
+                        {[...Array(9)].map((_, optionIndex) => (
+                            <Option key={optionIndex + 1} value={String(optionIndex + 1)}>{optionIndex + 1}</Option>
+                        ))}
+                    </Select>
+                ))}
+            </ButtonWrapper>
+
             {/* 버튼 */}
             <Button onClick={handleButtonClick}>{buttonText}</Button>
-        </div>
+        </Wrapper>
     );
 };
 
