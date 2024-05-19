@@ -31,7 +31,10 @@ export default function CreateRoom() {
             let roomId = Math.floor(100000 + Math.random() * 900000);
             await set(ref(database, 'rooms/' + roomId), {
                 roomname: roomName,
-                host: auth.currentUser?.displayName,
+                host: {
+                    name: auth.currentUser?.displayName,
+                    ready: false
+                },
                 turn: auth.currentUser?.displayName
             })
             //go to game page

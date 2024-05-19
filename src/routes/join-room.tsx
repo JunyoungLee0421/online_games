@@ -70,7 +70,10 @@ export default function JoinRoom() {
             //add user to the members list of the room
             const dbRef = ref(database, 'rooms/' + roomId);
             await update(dbRef, {
-                guest: auth.currentUser?.displayName
+                guest: {
+                    name: auth.currentUser?.displayName,
+                    ready: false
+                }
             }).then(() => {
                 console.log('added member successfully');
             }).catch((error) => {

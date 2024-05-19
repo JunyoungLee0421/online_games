@@ -1,7 +1,7 @@
 import { useParams } from "react-router-dom"
 import styled from "styled-components";
-import { database } from "../firebase";
-import { child, get, onValue, ref, update } from "firebase/database";
+import { auth, database } from "../firebase";
+import { child, get, onValue, ref, set, update } from "firebase/database";
 import { useEffect, useState } from "react";
 import DropdownForm from "../components/dropDownForm";
 import CompareOneForm from "../components/compareOneNumber";
@@ -86,7 +86,7 @@ export default function GameRoom() {
   const [hostPlayer, setHostPlayer] = useState("");
   const [guestPlayer, setGuestPlayer] = useState("");
   const [currentTurn, setCurrentTurn] = useState("");
-
+  const [hasSubmit, setHasSubmit] = useState(false);
   //get current room information
   // useEffect(() => {
   //     const dbRef = ref(database);
@@ -126,11 +126,51 @@ export default function GameRoom() {
   //     });
   // }, [room_id]);
 
-  //start game
-  //set name and turn
-  //set opponent number to local
+  //wait until guest join, once just join, get the initial data
+  useEffect(() => {
+    const guestRef = ref(database, `rooms/${room_id}/guest`);
+    onValue(guestRef, (snapshot) => {
+      console.log("guest has entered!");
+      //set host and guest name
+      const dbRef = ref(database);
+      get(child(dbRef, `rooms/${room_id}`)).then((snapshot) => {
+        if (snapshot.exists()) {
+          const roomData = snapshot.val();
+          console.log(roomData);
+          setHostPlayer(roomData.host.name);
+          setGuestPlayer(roomData.guest.name);
+          setCurrentTurn(roomData.turn);
+        } else {
+          console.log("No data available");
+        }
+      }).catch((error) => {
+        console.log(error);
+      });
+    });
+  }, [room_id]);
 
-  //set secret number
+
+  //on submit number, set the number to te db
+  //check if there is no duplicate and all the numbers add up to 20.
+  //pass it if it is, alert user and return early otherwise.
+  const submitSecretNumber = async (selectedNumbers: string[]) => {
+    try {
+      const playerName = auth.currentUser?.displayName;
+      const dbRef = ref(database, 'rooms/' + room_id + "/" + playerName);
+      await set(dbRef, {
+        secretNumber: selectedNumbers
+      }).then(() => {
+        console.log('submitted secret number successfully');
+      }).catch((error) => {
+        console.log(error);
+      });
+      setHasSubmit(true);
+    } catch (e) {
+      console.log(e);
+    }
+  }
+
+  //set opponent number to local
 
   //compare one
   //update game status chart
@@ -150,18 +190,25 @@ export default function GameRoom() {
   }
   return (
     <Wrapper>
-      {/* <Title>Game Room : {room_id}</Title>
-            <H1>Host : </H1>
-            <H1>Guest : </H1>
-            <H1>Current Turn : {currentTurn}</H1> */}
+      <Title>Game Room : {room_id}</Title>
+      {hostPlayer && guestPlayer ? (
+        <>
+          <H1>Host : {hostPlayer}</H1>
+          <H1>Guest : {guestPlayer}</H1>
+        </>
+      ) : (
+        <H1>Waiting for players to join...</H1>
+      )}
+
+      {/* <H1>Current Turn : {currentTurn}</H1> */}
 
       {/* <Button onClick={changeTurn}>Change Turn</Button> */}
 
       <FormWrapper>
-        <DropdownForm buttonText="Submit Number" onButtonClick={onButtonClick} />
+        <DropdownForm hasSubmit={hasSubmit} buttonText="Submit Number" onButtonClick={submitSecretNumber} />
         <CompareOneForm buttonText="Compare" onButtonClick={onButtonClick} />
         <CompareTwoForm buttonText="Compare" onButtonClick={onButtonClick} />
-        <DropdownForm buttonText="Guess Enemy Number" onButtonClick={onButtonClick} />
+        <DropdownForm hasSubmit={false} buttonText="Guess Enemy Number" onButtonClick={onButtonClick} />
       </FormWrapper>
 
       <HintWrapper>

@@ -37,16 +37,24 @@ const Button = styled.button`
   &:hover {
     opacity: 0.8;
   }
+  /* 버튼 비활성화 스타일 */
+  ${(props) =>
+        props.disabled &&
+        `
+    opacity: 0.5;
+    cursor: not-allowed;
+  `}
 `;
 
 // 드롭다운 폼 컴포넌트 Props 정의
 interface DropdownFormProps {
+    hasSubmit: boolean;
     buttonText: string;
     onButtonClick: (selectedOptions: string[]) => void;
 }
 
 // 드롭다운 폼 컴포넌트
-const DropdownForm: React.FC<DropdownFormProps> = ({ buttonText, onButtonClick }) => {
+const DropdownForm: React.FC<DropdownFormProps> = ({ hasSubmit, buttonText, onButtonClick }) => {
     // 선택된 옵션 상태 관리
     const [selectedOptions, setSelectedOptions] = useState<string[]>(['', '', '', '']);
 
@@ -59,6 +67,15 @@ const DropdownForm: React.FC<DropdownFormProps> = ({ buttonText, onButtonClick }
 
     // 버튼 클릭 이벤트 핸들러
     const handleButtonClick = () => {
+        // Check for duplicates and sum
+        const duplicates = new Set(selectedOptions).size !== selectedOptions.length;
+        const sum = selectedOptions.reduce((acc, curr) => acc + Number(curr), 0);
+
+        if (duplicates || sum !== 20) {
+            alert("Please ensure there are no duplicate numbers and the sum is 20.");
+            return;
+        }
+
         onButtonClick(selectedOptions);
     };
 
@@ -78,7 +95,7 @@ const DropdownForm: React.FC<DropdownFormProps> = ({ buttonText, onButtonClick }
             </ButtonWrapper>
 
             {/* 버튼 */}
-            <Button onClick={handleButtonClick}>{buttonText}</Button>
+            <Button disabled={hasSubmit} onClick={handleButtonClick}>{buttonText}</Button>
         </Wrapper>
     );
 };
