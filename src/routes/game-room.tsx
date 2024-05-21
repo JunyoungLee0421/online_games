@@ -87,6 +87,10 @@ export default function GameRoom() {
   const [guestPlayer, setGuestPlayer] = useState("");
   const [currentTurn, setCurrentTurn] = useState("");
   const [hasSubmit, setHasSubmit] = useState(false);
+
+  const [selfSecretNum, setSelfSecretNum] = useState([]);
+  const [enemySecretNum, setEnemySecretNum] = useState([]);
+
   //get current room information
   // useEffect(() => {
   //     const dbRef = ref(database);
@@ -153,7 +157,7 @@ export default function GameRoom() {
   //on submit number, set the number to te db
   //check if there is no duplicate and all the numbers add up to 20.
   //pass it if it is, alert user and return early otherwise.
-  const submitSecretNumber = async (selectedNumbers: string[]) => {
+  const submitSecretNumber = async (selectedNumbers: number[]) => {
     try {
       const playerName = auth.currentUser?.displayName;
       const dbRef = ref(database, 'rooms/' + room_id + "/" + playerName);
@@ -170,17 +174,31 @@ export default function GameRoom() {
     }
   }
 
-  //set opponent number to local
+  //set opponent number to local(?)
+  //if i store the secret numbers on local, when compare just have to push the result to db
+  //otherwise i will have to get both secret numbers everything.
+  //so when i submit mine, i store it to local. 
+  //wait for opponent to submit, use onValue to save it into my local
 
   //compare one
   //update game status chart
+  const compareOne = async () => {
+
+  }
 
   //compare two
   //update game status chart
+  const compareTwo = async () => {
+
+  }
 
   //guessing number
-  //if correct, end the game
+  //if correct, show winning message and end the game. 
   //if not, show corresponding message and change turn
+  //on end game, once player clicks the alert redirect them to the home page (for now)
+  const guessNumber = async () => {
+
+  }
 
   //wait for end game call
   //end game => delete room

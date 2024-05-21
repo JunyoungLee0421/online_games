@@ -79,8 +79,8 @@ const CompareOneForm: React.FC<DropdownFormProps> = ({ buttonText, onButtonClick
                     <P>Player A's number</P>
                     <Select value={playerANumber} onChange={(e) => setPlayerANumber(e.target.value)}>
                         <Option value=""></Option>
-                        {[...Array(9)].map((_, index) => (
-                            <Option key={index + 1} value={String(index + 1)}>{index + 1}</Option>
+                        {['A', 'B', 'C', 'D'].map((option) => (
+                            <Option key={option} value={option}>{option}</Option>
                         ))}
                     </Select>
                 </ButtonWrapper>
@@ -89,11 +89,10 @@ const CompareOneForm: React.FC<DropdownFormProps> = ({ buttonText, onButtonClick
                     <P>Player B's number</P>
                     <Select value={playerBNumber} onChange={(e) => setPlayerBNumber(e.target.value)}>
                         <Option value=""></Option>
-                        {[...Array(9)].map((_, index) => (
-                            <Option key={index + 1} value={String(index + 1)}>{index + 1}</Option>
+                        {['A', 'B', 'C', 'D'].map((option) => (
+                            <Option key={option} value={option}>{option}</Option>
                         ))}
                     </Select>
-
                 </ButtonWrapper>
                 {/* Player B의 숫자 선택 */}
 

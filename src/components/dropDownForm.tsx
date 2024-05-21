@@ -11,7 +11,6 @@ const ButtonWrapper = styled.div`
     margin: 10px;
 `;
 
-
 // 드롭다운 스타일 정의
 const Select = styled.select`
   padding: 8px;
@@ -50,18 +49,18 @@ const Button = styled.button`
 interface DropdownFormProps {
     hasSubmit: boolean;
     buttonText: string;
-    onButtonClick: (selectedOptions: string[]) => void;
+    onButtonClick: (selectedOptions: number[]) => void; // 숫자 배열로 변경
 }
 
 // 드롭다운 폼 컴포넌트
 const DropdownForm: React.FC<DropdownFormProps> = ({ hasSubmit, buttonText, onButtonClick }) => {
-    // 선택된 옵션 상태 관리
-    const [selectedOptions, setSelectedOptions] = useState<string[]>(['', '', '', '']);
+    // 선택된 옵션 상태 관리 (숫자 배열로 초기화)
+    const [selectedOptions, setSelectedOptions] = useState<number[]>([0, 0, 0, 0]);
 
     // 옵션 변경 이벤트 핸들러
     const handleOptionChange = (index: number, event: React.ChangeEvent<HTMLSelectElement>) => {
         const newSelectedOptions = [...selectedOptions];
-        newSelectedOptions[index] = event.target.value;
+        newSelectedOptions[index] = Number(event.target.value); // 문자열을 숫자로 변환
         setSelectedOptions(newSelectedOptions);
     };
 
@@ -69,7 +68,7 @@ const DropdownForm: React.FC<DropdownFormProps> = ({ hasSubmit, buttonText, onBu
     const handleButtonClick = () => {
         // Check for duplicates and sum
         const duplicates = new Set(selectedOptions).size !== selectedOptions.length;
-        const sum = selectedOptions.reduce((acc, curr) => acc + Number(curr), 0);
+        const sum = selectedOptions.reduce((acc, curr) => acc + curr, 0);
 
         if (duplicates || sum !== 20) {
             alert("Please ensure there are no duplicate numbers and the sum is 20.");
@@ -85,10 +84,9 @@ const DropdownForm: React.FC<DropdownFormProps> = ({ hasSubmit, buttonText, onBu
                 {/* 드롭다운 메뉴 4개 */}
                 {[...Array(4)].map((_, index) => (
                     <Select key={index} value={selectedOptions[index]} onChange={(event) => handleOptionChange(index, event)}>
-                        <Option value=""></Option>
-                        {/* {String.fromCharCode(65 + index)} */}
+                        <Option value={0}></Option> {/* 초기값 0으로 설정 */}
                         {[...Array(9)].map((_, optionIndex) => (
-                            <Option key={optionIndex + 1} value={String(optionIndex + 1)}>{optionIndex + 1}</Option>
+                            <Option key={optionIndex + 1} value={optionIndex + 1}>{optionIndex + 1}</Option>
                         ))}
                     </Select>
                 ))}
