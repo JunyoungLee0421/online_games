@@ -33,7 +33,6 @@ export default function CreateRoom() {
                 roomname: roomName,
                 host: {
                     name: auth.currentUser?.displayName,
-                    ready: false
                 },
                 turn: auth.currentUser?.displayName
             })

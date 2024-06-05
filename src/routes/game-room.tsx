@@ -88,8 +88,8 @@ export default function GameRoom() {
   const [currentTurn, setCurrentTurn] = useState("");
   const [hasSubmit, setHasSubmit] = useState(false);
 
-  const [selfSecretNum, setSelfSecretNum] = useState([]);
-  const [enemySecretNum, setEnemySecretNum] = useState([]);
+  const [selfSecretNum, setSelfSecretNum] = useState<number[]>([]);
+  const [enemySecretNum, setEnemySecretNum] = useState<number[]>([]);
 
   //get current room information
   // useEffect(() => {
@@ -168,6 +168,7 @@ export default function GameRoom() {
       }).catch((error) => {
         console.log(error);
       });
+      setSelfSecretNum(selectedNumbers);
       setHasSubmit(true);
     } catch (e) {
       console.log(e);
@@ -179,6 +180,27 @@ export default function GameRoom() {
   //otherwise i will have to get both secret numbers everything.
   //so when i submit mine, i store it to local. 
   //wait for opponent to submit, use onValue to save it into my local
+  useEffect(() => {
+    const playerName = auth.currentUser?.displayName;
+    let enemyName = "";
+    if (playerName === hostPlayer) {
+      enemyName = guestPlayer;
+    } else if (playerName === guestPlayer) {
+      enemyName = hostPlayer;
+    }
+
+    const enemyRef = ref(database, `rooms/${room_id}/${enemyName}/secretNumber`);
+    onValue(enemyRef, (snapshot) => {
+      if (snapshot.exists()) {
+        console.log("enemy has submitted secret number!");
+        console.log(snapshot.val());
+        setEnemySecretNum(snapshot.val());
+        console.log(enemySecretNum);
+      } else {
+        console.log("No data available");
+      }
+    });
+  }, [room_id, hostPlayer, guestPlayer]);
 
   //compare one
   //update game status chart
@@ -229,6 +251,7 @@ export default function GameRoom() {
         <DropdownForm hasSubmit={false} buttonText="Guess Enemy Number" onButtonClick={onButtonClick} />
       </FormWrapper>
 
+      {/* game status chart */}
       <HintWrapper>
         <Table>
           <TableRow>
@@ -243,8 +266,6 @@ export default function GameRoom() {
           </TableRow>
         </Table>
       </HintWrapper>
-
-      {/* game status chart */}
     </Wrapper>
   )
 }

@@ -72,7 +72,6 @@ export default function JoinRoom() {
             await update(dbRef, {
                 guest: {
                     name: auth.currentUser?.displayName,
-                    ready: false
                 }
             }).then(() => {
                 console.log('added member successfully');
