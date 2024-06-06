@@ -1,7 +1,7 @@
 import { useParams } from "react-router-dom"
 import styled from "styled-components";
 import { auth, database } from "../firebase";
-import { child, get, onValue, ref, set, update } from "firebase/database";
+import { child, get, onValue, push, ref, set, update } from "firebase/database";
 import { useEffect, useState } from "react";
 import DropdownForm from "../components/dropDownForm";
 import CompareOneForm from "../components/compareOneNumber";
@@ -80,16 +80,17 @@ const Input = styled.input`
   }
 `;
 
-
 export default function GameRoom() {
   const { room_id } = useParams();
-  const [hostPlayer, setHostPlayer] = useState("");
-  const [guestPlayer, setGuestPlayer] = useState("");
+  const [playerA, setPlayerA] = useState("");
+  const [playerB, setPlayerB] = useState("");
   const [currentTurn, setCurrentTurn] = useState("");
   const [hasSubmit, setHasSubmit] = useState(false);
 
   const [selfSecretNum, setSelfSecretNum] = useState<number[]>([]);
   const [enemySecretNum, setEnemySecretNum] = useState<number[]>([]);
+
+  const [hints, setHints] = useState<{ compared: string, result: string }[]>([]);
 
   //get current room information
   // useEffect(() => {
@@ -141,8 +142,8 @@ export default function GameRoom() {
         if (snapshot.exists()) {
           const roomData = snapshot.val();
           console.log(roomData);
-          setHostPlayer(roomData.host.name);
-          setGuestPlayer(roomData.guest.name);
+          setPlayerA(roomData.playerA.name);
+          setPlayerB(roomData.playerB.name);
           setCurrentTurn(roomData.turn);
         } else {
           console.log("No data available");
@@ -183,10 +184,10 @@ export default function GameRoom() {
   useEffect(() => {
     const playerName = auth.currentUser?.displayName;
     let enemyName = "";
-    if (playerName === hostPlayer) {
-      enemyName = guestPlayer;
-    } else if (playerName === guestPlayer) {
-      enemyName = hostPlayer;
+    if (playerName === playerA) {
+      enemyName = playerB;
+    } else if (playerName === playerB) {
+      enemyName = playerA;
     }
 
     const enemyRef = ref(database, `rooms/${room_id}/${enemyName}/secretNumber`);
@@ -200,25 +201,78 @@ export default function GameRoom() {
         console.log("No data available");
       }
     });
-  }, [room_id, hostPlayer, guestPlayer]);
+  }, [room_id, playerA, playerB]);
 
   //compare one
   //update game status chart
-  const compareOne = async () => {
+  //compared : tim's B / sabu's B
+  //result : tim's B > sabu's B 
+  const compareOne = async (myNum: string, enemyNum: string) => {
+    const myIndex = "ABCD".indexOf(myNum);
+    const enemyIndex = "ABCD".indexOf(enemyNum);
 
+    if (myIndex !== -1 && enemyIndex !== -1) {
+      const myValue = selfSecretNum[myIndex];
+      const enemyValue = enemySecretNum[enemyIndex];
+      const result = myValue > enemyValue ? ">" : myValue < enemyValue ? "<" : "=";
+
+      const hint = {
+        compared: `${myNum} vs ${enemyNum}`,
+        result: `${myNum} ${result} ${enemyNum}`
+      };
+
+      const dbRef = ref(database, 'rooms/' + room_id + "/hints");
+      await push(dbRef, hint);
+      console.log('Hint added:', hint);
+    } else {
+      console.log("Invalid indices for comparison.");
+    }
   }
 
   //compare two
   //update game status chart
-  const compareTwo = async () => {
+  //compared : tim's A + B : sabu's C + D
+  //result : tim's A + B = sabu's C + D
+  const compareTwo = async (myNums: string[], enemyNums: string[]) => {
+    const myIndices = myNums.map(num => "ABCD".indexOf(num));
+    const enemyIndices = enemyNums.map(num => "ABCD".indexOf(num));
 
+    if (myIndices.every(idx => idx !== -1) && enemyIndices.every(idx => idx !== -1)) {
+      const myValue = myIndices.reduce((acc, idx) => acc + selfSecretNum[idx], 0);
+      const enemyValue = enemyIndices.reduce((acc, idx) => acc + enemySecretNum[idx], 0);
+      const result = myValue > enemyValue ? ">" : myValue < enemyValue ? "<" : "=";
+
+      const hint = {
+        compared: `${myNums.join(' + ')} vs ${enemyNums.join(' + ')}`,
+        result: `${myNums.join(' + ')} ${result} ${enemyNums.join(' + ')}`
+      };
+
+      const dbRef = ref(database, 'rooms/' + room_id + "/hints");
+      await push(dbRef, hint);
+      console.log('Hint added:', hint);
+    } else {
+      console.log("Invalid indices for comparison.");
+    }
   }
+
+  // fetch hints and update UI
+  useEffect(() => {
+    const hintsRef = ref(database, `rooms/${room_id}/hints`);
+    onValue(hintsRef, (snapshot) => {
+      const hintsData = snapshot.val();
+      if (hintsData) {
+        const hintsArray = Object.values(hintsData) as { compared: string; result: string }[];
+        setHints(hintsArray);
+      }
+    });
+  }, [room_id]);
+
 
   //guessing number
   //if correct, show winning message and end the game. 
   //if not, show corresponding message and change turn
   //on end game, once player clicks the alert redirect them to the home page (for now)
-  const guessNumber = async () => {
+  const guessNumber = async (selectedNumbers: number[]) => {
 
   }
 
@@ -231,13 +285,13 @@ export default function GameRoom() {
   return (
     <Wrapper>
       <Title>Game Room : {room_id}</Title>
-      {hostPlayer && guestPlayer ? (
+      {playerA && playerB ? (
         <>
-          <H1>Host : {hostPlayer}</H1>
-          <H1>Guest : {guestPlayer}</H1>
+          <H1>Player A : {playerA}</H1>
+          <H1>Player B : {playerB}</H1>
         </>
       ) : (
-        <H1>Waiting for players to join...</H1>
+        <H1>Waiting for another player to join...</H1>
       )}
 
       {/* <H1>Current Turn : {currentTurn}</H1> */}
@@ -246,9 +300,9 @@ export default function GameRoom() {
 
       <FormWrapper>
         <DropdownForm hasSubmit={hasSubmit} buttonText="Submit Number" onButtonClick={submitSecretNumber} />
-        <CompareOneForm buttonText="Compare" onButtonClick={onButtonClick} />
-        <CompareTwoForm buttonText="Compare" onButtonClick={onButtonClick} />
-        <DropdownForm hasSubmit={false} buttonText="Guess Enemy Number" onButtonClick={onButtonClick} />
+        <CompareOneForm buttonText="Compare" onButtonClick={compareOne} />
+        <CompareTwoForm buttonText="Compare" onButtonClick={compareTwo} />
+        <DropdownForm hasSubmit={false} buttonText="Guess Enemy Number" onButtonClick={guessNumber} />
       </FormWrapper>
 
       {/* game status chart */}
@@ -259,11 +313,13 @@ export default function GameRoom() {
             <TableCell>Compared</TableCell>
             <TableCell>Result</TableCell>
           </TableRow>
-          <TableRow>
-            <TableCell>#</TableCell>
-            <TableCell>X+Y</TableCell>
-            <TableCell>X = Y</TableCell>
-          </TableRow>
+          {hints.map((hint, index) => (
+            <TableRow key={index}>
+              <TableCell>{index + 1}</TableCell>
+              <TableCell>{hint.compared}</TableCell>
+              <TableCell>{hint.result}</TableCell>
+            </TableRow>
+          ))}
         </Table>
       </HintWrapper>
     </Wrapper>

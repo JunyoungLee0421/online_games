@@ -53,7 +53,7 @@ const P = styled.p`
 // 드롭다운 폼 컴포넌트 Props 정의
 interface DropdownFormProps {
     buttonText: string;
-    onButtonClick: () => void;
+    onButtonClick: (numA: string, numB: string) => void;
 }
 
 // 드롭다운 폼 컴포넌트
@@ -68,7 +68,7 @@ const CompareOneForm: React.FC<DropdownFormProps> = ({ buttonText, onButtonClick
         // 여기서는 임시로 console.log로 선택된 숫자들을 출력하는 것으로 대체합니다.
         console.log("Player A's number:", playerANumber);
         console.log("Player B's number:", playerBNumber);
-        onButtonClick();
+        onButtonClick(playerANumber, playerBNumber);
     };
 
     return (
@@ -76,7 +76,7 @@ const CompareOneForm: React.FC<DropdownFormProps> = ({ buttonText, onButtonClick
             <SelectionWrapper>
                 <ButtonWrapper>
                     {/* Player A의 숫자 선택 */}
-                    <P>Player A's number</P>
+                    <P>My number</P>
                     <Select value={playerANumber} onChange={(e) => setPlayerANumber(e.target.value)}>
                         <Option value=""></Option>
                         {['A', 'B', 'C', 'D'].map((option) => (
@@ -86,7 +86,7 @@ const CompareOneForm: React.FC<DropdownFormProps> = ({ buttonText, onButtonClick
                 </ButtonWrapper>
 
                 <ButtonWrapper>
-                    <P>Player B's number</P>
+                    <P>Enemy's number</P>
                     <Select value={playerBNumber} onChange={(e) => setPlayerBNumber(e.target.value)}>
                         <Option value=""></Option>
                         {['A', 'B', 'C', 'D'].map((option) => (

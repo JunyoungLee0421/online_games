@@ -31,7 +31,7 @@ export default function CreateRoom() {
             let roomId = Math.floor(100000 + Math.random() * 900000);
             await set(ref(database, 'rooms/' + roomId), {
                 roomname: roomName,
-                host: {
+                playerA: {
                     name: auth.currentUser?.displayName,
                 },
                 turn: auth.currentUser?.displayName

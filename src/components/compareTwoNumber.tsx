@@ -49,7 +49,7 @@ const P = styled.p`
 // 드롭다운 폼 컴포넌트 Props 정의
 interface DropdownFormProps {
     buttonText: string;
-    onButtonClick: () => void;
+    onButtonClick: (playerANums: string[], playerBNums: string[]) => void;
 }
 
 // 드롭다운 폼 컴포넌트
@@ -64,7 +64,7 @@ const CompareTwoForm: React.FC<DropdownFormProps> = ({ buttonText, onButtonClick
         // 여기서는 임시로 console.log로 선택된 숫자들을 출력하는 것으로 대체합니다.
         console.log("Player A's numbers:", playerANumbers);
         console.log("Player B's numbers:", playerBNumbers);
-        onButtonClick();
+        onButtonClick(playerANumbers, playerBNumbers);
     };
 
     return (
