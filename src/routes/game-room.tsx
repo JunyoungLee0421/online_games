@@ -202,21 +202,31 @@ export default function GameRoom() {
   //update game status chart
   //compared : tim's A + B : sabu's C + D
   //result : tim's A + B = sabu's C + D
-  const compareTwo = async (myNums: string[], enemyNums: string[]) => {
-    const myIndices = myNums.map(num => "ABCD".indexOf(num));
-    const enemyIndices = enemyNums.map(num => "ABCD".indexOf(num));
+  const compareTwo = async (playerANums: string[], playerBNums: string[]) => {
+    const playerAIndices = playerANums.map(num => "ABCD".indexOf(num));
+    const playerBIndices = playerBNums.map(num => "ABCD".indexOf(num));
     const playerName = auth.currentUser?.displayName;
-    const enemyName = playerName === playerA ? playerB : playerA;
 
-    if (myIndices.every(idx => idx !== -1) && enemyIndices.every(idx => idx !== -1)) {
-      const myValue = myIndices.reduce((acc, idx) => acc + selfSecretNum[idx], 0);
-      const enemyValue = enemyIndices.reduce((acc, idx) => acc + enemySecretNum[idx], 0);
-      const result = myValue > enemyValue ? ">" : myValue < enemyValue ? "<" : "=";
+    if (playerAIndices.every(idx => idx !== -1) && playerBIndices.every(idx => idx !== -1)) {
+      let playerAValue, playerBValue, hint;
 
-      const hint = {
-        playerA: myNums.join(' + '),
+      if (playerName === playerA) {
+        // 내가 playerA이면
+        playerAValue = playerAIndices.reduce((acc, idx) => acc + selfSecretNum[idx], 0);
+        playerBValue = playerBIndices.reduce((acc, idx) => acc + enemySecretNum[idx], 0);
+      } else {
+        // 내가 playerB이면
+        playerAValue = playerAIndices.reduce((acc, idx) => acc + enemySecretNum[idx], 0);
+        playerBValue = playerBIndices.reduce((acc, idx) => acc + selfSecretNum[idx], 0);
+      }
+
+      // 항상 playerA의 숫자가 왼쪽에 오도록 비교
+      const result = playerAValue > playerBValue ? ">" : playerAValue < playerBValue ? "<" : "=";
+
+      hint = {
+        playerA: playerANums.join(' + '),
         inequality: result,
-        playerB: enemyNums.join(' + ')
+        playerB: playerBNums.join(' + ')
       };
 
       const dbRef = ref(database, `rooms/${room_id}/hints`);
@@ -226,6 +236,7 @@ export default function GameRoom() {
       console.log("Invalid indices for comparison.");
     }
   }
+
 
   // fetch hints and update UI
   useEffect(() => {
