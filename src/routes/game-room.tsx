@@ -9,6 +9,16 @@ import CompareTwoForm from "../components/compareTwoNumber";
 
 const Wrapper = styled.div`
   display: flex;
+  flex-direction: column;
+`;
+
+const InfoWrapper = styled.div`
+  display: flex;
+  flex-direction: row;
+`;
+
+const GamePlayWrapper = styled.div`
+  display: flex;
   flex-direction: row;
 `;
 
@@ -45,41 +55,6 @@ const Title = styled.h1``;
 
 const H1 = styled.p``;
 
-const Button = styled.button`
-  padding: 10px 20px;
-  border-radius: 50px;
-  border: none;
-  width: 100%;
-  font-size: 16px;
-  cursor: pointer;
-    &:hover {
-      opacity: 0.8;
-    }
-`;
-
-const Form = styled.form`
-  margin-top: 50px;
-  margin-bottom: 10px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  width: 100%;
-`;
-
-const Input = styled.input`
-  padding: 10px 20px;
-  border-radius: 50px;
-  border: 1px solid black;
-  width: 100%;
-  font-size: 16px;
-  &[type="submit"] {
-    cursor: pointer;
-    &:hover {
-      opacity: 0.8;
-    }
-  }
-`;
-
 export default function GameRoom() {
   const { room_id } = useParams();
   const [playerA, setPlayerA] = useState("");
@@ -90,25 +65,7 @@ export default function GameRoom() {
   const [selfSecretNum, setSelfSecretNum] = useState<number[]>([]);
   const [enemySecretNum, setEnemySecretNum] = useState<number[]>([]);
 
-  const [hints, setHints] = useState<{ compared: string, result: string }[]>([]);
-
-  //get current room information
-  // useEffect(() => {
-  //     const dbRef = ref(database);
-  //     get(child(dbRef, `rooms/${room_id}`)).then((snapshot) => {
-  //         if (snapshot.exists()) {
-  //             const roomData = snapshot.val();
-  //             console.log(roomData);
-  //             setHostPlayer(roomData.host);
-  //             setGuestPlayer(roomData.guest);
-  //             setCurrentTurn(roomData.turn);
-  //         } else {
-  //             console.log("No data available");
-  //         }
-  //     }).catch((error) => {
-  //         console.log(error);
-  //     });
-  // }, [room_id]);
+  const [hints, setHints] = useState<{ playerA: string; inequality: string; playerB: string }[]>([]);
 
   //turn change
   // const changeTurn = () => {
@@ -154,7 +111,6 @@ export default function GameRoom() {
     });
   }, [room_id]);
 
-
   //on submit number, set the number to te db
   //check if there is no duplicate and all the numbers add up to 20.
   //pass it if it is, alert user and return early otherwise.
@@ -176,7 +132,7 @@ export default function GameRoom() {
     }
   }
 
-  //set opponent number to local(?)
+  //set opponent number to local
   //if i store the secret numbers on local, when compare just have to push the result to db
   //otherwise i will have to get both secret numbers everything.
   //so when i submit mine, i store it to local. 
@@ -205,20 +161,33 @@ export default function GameRoom() {
 
   //compare one
   //update game status chart
-  //compared : tim's B / sabu's B
-  //result : tim's B > sabu's B 
-  const compareOne = async (myNum: string, enemyNum: string) => {
-    const myIndex = "ABCD".indexOf(myNum);
-    const enemyIndex = "ABCD".indexOf(enemyNum);
+  const compareOne = async (playerANum: string, playerBNum: string) => {
+    const playerAIndex = "ABCD".indexOf(playerANum);
+    const playerBIndex = "ABCD".indexOf(playerBNum);
+    const playerName = auth.currentUser?.displayName;
 
-    if (myIndex !== -1 && enemyIndex !== -1) {
-      const myValue = selfSecretNum[myIndex];
-      const enemyValue = enemySecretNum[enemyIndex];
-      const result = myValue > enemyValue ? ">" : myValue < enemyValue ? "<" : "=";
+    if (playerAIndex !== -1 && playerBIndex !== -1) {
+      let myValue, enemyValue, hint;
 
-      const hint = {
-        compared: `${myNum} vs ${enemyNum}`,
-        result: `${myNum} ${result} ${enemyNum}`
+      if (playerName === playerA) {
+        // 내가 playerA이면
+        myValue = selfSecretNum[playerAIndex];
+        enemyValue = enemySecretNum[playerBIndex];
+      } else {
+        // 내가 playerB이면
+        myValue = selfSecretNum[playerBIndex];
+        enemyValue = enemySecretNum[playerAIndex];
+      }
+
+      // 항상 playerA의 숫자가 왼쪽에 오도록 비교
+      const result = playerName === playerA
+        ? myValue > enemyValue ? ">" : myValue < enemyValue ? "<" : "="
+        : enemyValue > myValue ? ">" : enemyValue < myValue ? "<" : "=";
+
+      hint = {
+        playerA: playerANum,
+        inequality: result,
+        playerB: playerBNum
       };
 
       const dbRef = ref(database, 'rooms/' + room_id + "/hints");
@@ -236,6 +205,8 @@ export default function GameRoom() {
   const compareTwo = async (myNums: string[], enemyNums: string[]) => {
     const myIndices = myNums.map(num => "ABCD".indexOf(num));
     const enemyIndices = enemyNums.map(num => "ABCD".indexOf(num));
+    const playerName = auth.currentUser?.displayName;
+    const enemyName = playerName === playerA ? playerB : playerA;
 
     if (myIndices.every(idx => idx !== -1) && enemyIndices.every(idx => idx !== -1)) {
       const myValue = myIndices.reduce((acc, idx) => acc + selfSecretNum[idx], 0);
@@ -243,11 +214,12 @@ export default function GameRoom() {
       const result = myValue > enemyValue ? ">" : myValue < enemyValue ? "<" : "=";
 
       const hint = {
-        compared: `${myNums.join(' + ')} vs ${enemyNums.join(' + ')}`,
-        result: `${myNums.join(' + ')} ${result} ${enemyNums.join(' + ')}`
+        playerA: myNums.join(' + '),
+        inequality: result,
+        playerB: enemyNums.join(' + ')
       };
 
-      const dbRef = ref(database, 'rooms/' + room_id + "/hints");
+      const dbRef = ref(database, `rooms/${room_id}/hints`);
       await push(dbRef, hint);
       console.log('Hint added:', hint);
     } else {
@@ -261,7 +233,7 @@ export default function GameRoom() {
     onValue(hintsRef, (snapshot) => {
       const hintsData = snapshot.val();
       if (hintsData) {
-        const hintsArray = Object.values(hintsData) as { compared: string; result: string }[];
+        const hintsArray = Object.values(hintsData) as { playerA: string; inequality: string; playerB: string }[];
         setHints(hintsArray);
       }
     });
@@ -273,55 +245,87 @@ export default function GameRoom() {
   //if not, show corresponding message and change turn
   //on end game, once player clicks the alert redirect them to the home page (for now)
   const guessNumber = async (selectedNumbers: number[]) => {
-
+    const playerName = auth.currentUser?.displayName;
+    if (JSON.stringify(selectedNumbers) === JSON.stringify(enemySecretNum)) {
+      const dbRef = ref(database, `rooms/${room_id}`);
+      await update(dbRef, {
+        isGameFinished: true,
+        winner: playerName
+      });
+      console.log('Game finished successfully');
+    } else {
+      console.log('Wrong guess. Try again.');
+    }
   }
 
   //wait for end game call
+  useEffect(() => {
+    const gameFinishedRef = ref(database, `rooms/${room_id}/isGameFinished`);
+    onValue(gameFinishedRef, (snapshot) => {
+      if (snapshot.val()) {
+        const dbRef = ref(database, `rooms/${room_id}/winner`);
+        get(dbRef).then((snapshot) => {
+          if (snapshot.exists()) {
+            const winner = snapshot.val();
+            alert(`${winner} won the game!`);
+            // Redirect to homepage
+          }
+        });
+      }
+    });
+  }, [room_id]);
+
   //end game => delete room
 
-  const onButtonClick = () => {
-    console.log("hi")
-  }
   return (
+
     <Wrapper>
-      <Title>Game Room : {room_id}</Title>
-      {playerA && playerB ? (
-        <>
-          <H1>Player A : {playerA}</H1>
-          <H1>Player B : {playerB}</H1>
-        </>
-      ) : (
-        <H1>Waiting for another player to join...</H1>
-      )}
+      <InfoWrapper>
+        <Title>Game Room : {room_id}</Title>
+        {playerA && playerB ? (
+          <>
+            <H1>Player A : {playerA}</H1>
+            <H1>Player B : {playerB}</H1>
+          </>
+        ) : (
+          <H1>Waiting for another player to join...</H1>
+        )}
 
-      {/* <H1>Current Turn : {currentTurn}</H1> */}
+        {/* <H1>Current Turn : {currentTurn}</H1> */}
 
-      {/* <Button onClick={changeTurn}>Change Turn</Button> */}
+        {/* <Button onClick={changeTurn}>Change Turn</Button> */}
+      </InfoWrapper>
+      <GamePlayWrapper>
+        <FormWrapper>
+          <DropdownForm hasSubmit={hasSubmit} buttonText="Submit Number" onButtonClick={submitSecretNumber} />
+          <CompareOneForm buttonText="Compare" onButtonClick={compareOne} />
+          <CompareTwoForm buttonText="Compare" onButtonClick={compareTwo} />
+          <DropdownForm hasSubmit={false} buttonText="Guess Enemy Number" onButtonClick={guessNumber} />
+        </FormWrapper>
 
-      <FormWrapper>
-        <DropdownForm hasSubmit={hasSubmit} buttonText="Submit Number" onButtonClick={submitSecretNumber} />
-        <CompareOneForm buttonText="Compare" onButtonClick={compareOne} />
-        <CompareTwoForm buttonText="Compare" onButtonClick={compareTwo} />
-        <DropdownForm hasSubmit={false} buttonText="Guess Enemy Number" onButtonClick={guessNumber} />
-      </FormWrapper>
-
-      {/* game status chart */}
-      <HintWrapper>
-        <Table>
-          <TableRow>
-            <TableCell>Index</TableCell>
-            <TableCell>Compared</TableCell>
-            <TableCell>Result</TableCell>
-          </TableRow>
-          {hints.map((hint, index) => (
-            <TableRow key={index}>
-              <TableCell>{index + 1}</TableCell>
-              <TableCell>{hint.compared}</TableCell>
-              <TableCell>{hint.result}</TableCell>
+        {/* game status chart */}
+        <HintWrapper>
+          <Table>
+            <TableRow>
+              <TableCell>Index</TableCell>
+              <TableCell>playerA</TableCell>
+              <TableCell>inequality</TableCell>
+              <TableCell>playerB</TableCell>
             </TableRow>
-          ))}
-        </Table>
-      </HintWrapper>
+            {hints.map((hint, index) => (
+              <TableRow key={index}>
+                <TableCell>{index + 1}</TableCell>
+                <TableCell>{hint.playerA}</TableCell>
+                <TableCell>{hint.inequality}</TableCell>
+                <TableCell>{hint.playerB}</TableCell>
+              </TableRow>
+            ))}
+          </Table>
+        </HintWrapper>
+      </GamePlayWrapper>
+
+
+
     </Wrapper>
   )
 }

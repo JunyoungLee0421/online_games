@@ -76,7 +76,7 @@ const CompareOneForm: React.FC<DropdownFormProps> = ({ buttonText, onButtonClick
             <SelectionWrapper>
                 <ButtonWrapper>
                     {/* Player A의 숫자 선택 */}
-                    <P>My number</P>
+                    <P>Player A's number</P>
                     <Select value={playerANumber} onChange={(e) => setPlayerANumber(e.target.value)}>
                         <Option value=""></Option>
                         {['A', 'B', 'C', 'D'].map((option) => (
@@ -86,7 +86,7 @@ const CompareOneForm: React.FC<DropdownFormProps> = ({ buttonText, onButtonClick
                 </ButtonWrapper>
 
                 <ButtonWrapper>
-                    <P>Enemy's number</P>
+                    <P>Player B's number</P>
                     <Select value={playerBNumber} onChange={(e) => setPlayerBNumber(e.target.value)}>
                         <Option value=""></Option>
                         {['A', 'B', 'C', 'D'].map((option) => (
