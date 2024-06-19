@@ -1,7 +1,7 @@
-import { useParams } from "react-router-dom"
+import { useNavigate, useParams } from "react-router-dom"
 import styled from "styled-components";
 import { auth, database } from "../firebase";
-import { child, get, onValue, push, ref, set, update } from "firebase/database";
+import { child, get, onValue, push, ref, remove, set, update } from "firebase/database";
 import { useEffect, useState } from "react";
 import DropdownForm from "../components/dropDownForm";
 import CompareOneForm from "../components/compareOneNumber";
@@ -14,7 +14,8 @@ const Wrapper = styled.div`
 
 const InfoWrapper = styled.div`
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
+  align-items: center;
 `;
 
 const GamePlayWrapper = styled.div`
@@ -25,6 +26,7 @@ const GamePlayWrapper = styled.div`
 const FormWrapper = styled.div`
   width: 400px;
   border: 1px solid black;
+  border-radius: 10px;
   padding: 10px;
   margin-right: 10px;
   display: flex;
@@ -32,30 +34,55 @@ const FormWrapper = styled.div`
   gap: 20px; /* 위아래 간격 */
 `;
 
+const H1 = styled.p`
+  font-size: 18px; /* 글씨체 크기 */
+  margin-bottom: 20px; /* 간격 */
+`;
+
 const HintWrapper = styled.div`
+  width: 500px;
   border: 1px solid black;
   margin-left: 10px;
+  border-radius: 10px; /* 모서리 둥글게 */
+  background-color: #f9f9f9; /* 배경색 추가 */
 `;
 
 const Table = styled.table`
-  width: 500px;
-  border: 1px solid black;
-  border-collapse: collapse;
+  width: 100%;
+  border-collapse: separate; /* 테두리 분리 */
+  text-align: center; /* 텍스트 왼쪽 정렬 */
 `;
 
 const TableRow = styled.tr`
-  border: 1px solid black;
+  &:nth-child(even) {
+    background-color: #f2f2f2; /* 줄무늬 배경색 */
+  }
+`;
+
+const TableHeader = styled.th`
+  border: 2px solid #ddd;
+  margin-bottom: 10px; /* 헤더 사이 간격 */
+  margin-left: 20px;
+  padding: 12px 15px; /* 패딩 추가 */
+  background-color: #779ee8;
+  color: white;
+  &:first-child {
+    border-top-left-radius: 10px; /* 좌상단 모서리 둥글게 */
+  }
+
+  &:last-child {
+    border-top-right-radius: 10px; /* 우상단 모서리 둥글게 */
+  }
 `;
 
 const TableCell = styled.td`
-  border: 1px solid black;
+  border-bottom: 1px solid #ddd;
+  padding: 12px 15px; /* 패딩 추가 */
+  margin-bottom: 10px; /* 셀 사이 간격 */
 `;
 
-const Title = styled.h1``;
-
-const H1 = styled.p``;
-
 export default function GameRoom() {
+  const navigate = useNavigate();
   const { room_id } = useParams();
   const [playerA, setPlayerA] = useState("");
   const [playerB, setPlayerB] = useState("");
@@ -67,30 +94,9 @@ export default function GameRoom() {
 
   const [hints, setHints] = useState<{ playerA: string; inequality: string; playerB: string }[]>([]);
 
-  //turn change
-  // const changeTurn = () => {
-  //     const nextTurn = currentTurn === hostPlayer ? guestPlayer : hostPlayer;
-  //     update(ref(database, `rooms/${room_id}`), {
-  //         turn: nextTurn,
-  //     }).then(() => {
-  //         setCurrentTurn(nextTurn);
-  //     }).catch((error) => {
-  //         console.log("Error updating turn:", error);
-  //     });
-  // };
-
-  // useEffect(() => {
-  //     const turnRef = ref(database, `rooms/${room_id}/turn`);
-  //     onValue(turnRef, (snapshot) => {
-  //         const data = snapshot.val();
-  //         console.log(data);
-  //         setCurrentTurn(data);
-  //     });
-  // }, [room_id]);
-
   //wait until guest join, once just join, get the initial data
   useEffect(() => {
-    const guestRef = ref(database, `rooms/${room_id}/guest`);
+    const guestRef = ref(database, `rooms/${room_id}/playerB`);
     onValue(guestRef, (snapshot) => {
       console.log("guest has entered!");
       //set host and guest name
@@ -190,9 +196,12 @@ export default function GameRoom() {
         playerB: playerBNum
       };
 
+      //upload hint to db
       const dbRef = ref(database, 'rooms/' + room_id + "/hints");
       await push(dbRef, hint);
       console.log('Hint added:', hint);
+      //change turn
+      changeTurn();
     } else {
       console.log("Invalid indices for comparison.");
     }
@@ -229,14 +238,16 @@ export default function GameRoom() {
         playerB: playerBNums.join(' + ')
       };
 
+      //upload hint to db
       const dbRef = ref(database, `rooms/${room_id}/hints`);
       await push(dbRef, hint);
       console.log('Hint added:', hint);
+      //change turn
+      changeTurn();
     } else {
       console.log("Invalid indices for comparison.");
     }
   }
-
 
   // fetch hints and update UI
   useEffect(() => {
@@ -257,42 +268,78 @@ export default function GameRoom() {
   //on end game, once player clicks the alert redirect them to the home page (for now)
   const guessNumber = async (selectedNumbers: number[]) => {
     const playerName = auth.currentUser?.displayName;
-    if (JSON.stringify(selectedNumbers) === JSON.stringify(enemySecretNum)) {
+    if (JSON.stringify(selectedNumbers) === JSON.stringify(enemySecretNum)) { //when guess was correct
+      //upload db info
       const dbRef = ref(database, `rooms/${room_id}`);
       await update(dbRef, {
         isGameFinished: true,
         winner: playerName
       });
       console.log('Game finished successfully');
-    } else {
+    } else { //when guess was incorrect
+      //upload info to db
       console.log('Wrong guess. Try again.');
+      //change turn
+      changeTurn();
     }
   }
 
   //wait for end game call
   useEffect(() => {
     const gameFinishedRef = ref(database, `rooms/${room_id}/isGameFinished`);
-    onValue(gameFinishedRef, (snapshot) => {
+    const unsubscribe = onValue(gameFinishedRef, (snapshot) => {
       if (snapshot.val()) {
         const dbRef = ref(database, `rooms/${room_id}/winner`);
         get(dbRef).then((snapshot) => {
           if (snapshot.exists()) {
             const winner = snapshot.val();
+            const roomRef = ref(database, `rooms/${room_id}`);
+
+            //alert user
             alert(`${winner} won the game!`);
+            //delete room
+            remove(roomRef);
             // Redirect to homepage
+            navigate("/");
+
+            // Unsubscribe the listener to prevent infinite loop
+            unsubscribe();
           }
         });
       }
     });
+
+    // Cleanup function to unsubscribe the listener
+    return () => unsubscribe();
   }, [room_id]);
 
-  //end game => delete room
+  //turn change
+  const changeTurn = () => {
+    const nextTurn = currentTurn === playerA ? playerB : playerA;
+    update(ref(database, `rooms/${room_id}`), {
+      turn: nextTurn,
+    }).then(() => {
+      setCurrentTurn(nextTurn);
+    }).catch((error) => {
+      console.log("Error updating turn:", error);
+    });
+  };
+
+  useEffect(() => {
+    const turnRef = ref(database, `rooms/${room_id}/turn`);
+    onValue(turnRef, (snapshot) => {
+      const data = snapshot.val();
+      console.log(data);
+      setCurrentTurn(data);
+    });
+  }, [room_id]);
+
+  const isMyTurn = auth.currentUser?.displayName === currentTurn;
 
   return (
-
     <Wrapper>
       <InfoWrapper>
-        <Title>Game Room : {room_id}</Title>
+        <H1>Game Room : {room_id}</H1>
         {playerA && playerB ? (
           <>
             <H1>Player A : {playerA}</H1>
@@ -301,42 +348,41 @@ export default function GameRoom() {
         ) : (
           <H1>Waiting for another player to join...</H1>
         )}
+        <H1>Current Turn : {currentTurn}</H1>
 
-        {/* <H1>Current Turn : {currentTurn}</H1> */}
-
-        {/* <Button onClick={changeTurn}>Change Turn</Button> */}
       </InfoWrapper>
       <GamePlayWrapper>
         <FormWrapper>
-          <DropdownForm hasSubmit={hasSubmit} buttonText="Submit Number" onButtonClick={submitSecretNumber} />
-          <CompareOneForm buttonText="Compare" onButtonClick={compareOne} />
-          <CompareTwoForm buttonText="Compare" onButtonClick={compareTwo} />
-          <DropdownForm hasSubmit={false} buttonText="Guess Enemy Number" onButtonClick={guessNumber} />
+          <DropdownForm isClickable={hasSubmit} buttonText="Submit Number" onButtonClick={submitSecretNumber} />
+          <CompareOneForm isClickable={isMyTurn} buttonText="Compare" onButtonClick={compareOne} />
+          <CompareTwoForm isClickable={isMyTurn} buttonText="Compare" onButtonClick={compareTwo} />
+          <DropdownForm isClickable={!isMyTurn} buttonText="Guess Enemy Number" onButtonClick={guessNumber} />
         </FormWrapper>
 
         {/* game status chart */}
         <HintWrapper>
           <Table>
-            <TableRow>
-              <TableCell>Index</TableCell>
-              <TableCell>playerA</TableCell>
-              <TableCell>inequality</TableCell>
-              <TableCell>playerB</TableCell>
-            </TableRow>
-            {hints.map((hint, index) => (
-              <TableRow key={index}>
-                <TableCell>{index + 1}</TableCell>
-                <TableCell>{hint.playerA}</TableCell>
-                <TableCell>{hint.inequality}</TableCell>
-                <TableCell>{hint.playerB}</TableCell>
+            <thead>
+              <TableRow>
+                <TableHeader>Index</TableHeader>
+                <TableHeader>Player A</TableHeader>
+                <TableHeader>Inequality</TableHeader>
+                <TableHeader>Player B</TableHeader>
               </TableRow>
-            ))}
+            </thead>
+            <tbody>
+              {hints.map((hint, index) => (
+                <TableRow key={index}>
+                  <TableCell>{index + 1}</TableCell>
+                  <TableCell>{hint.playerA}</TableCell>
+                  <TableCell>{hint.inequality}</TableCell>
+                  <TableCell>{hint.playerB}</TableCell>
+                </TableRow>
+              ))}
+            </tbody>
           </Table>
         </HintWrapper>
       </GamePlayWrapper>
-
-
-
     </Wrapper>
   )
 }

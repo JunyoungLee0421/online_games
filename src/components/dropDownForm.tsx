@@ -18,6 +18,12 @@ const Select = styled.select`
   border: 1px solid #ccc;
   border-radius: 4px;
   background-color: white;
+  ${(props) =>
+        props.disabled &&
+        `
+    opacity: 1;
+    cursor: not-allowed;
+  `}
 `;
 
 // 옵션 스타일 정의
@@ -47,13 +53,13 @@ const Button = styled.button`
 
 // 드롭다운 폼 컴포넌트 Props 정의
 interface DropdownFormProps {
-    hasSubmit: boolean;
+    isClickable: boolean;
     buttonText: string;
     onButtonClick: (selectedOptions: number[]) => void; // 숫자 배열로 변경
 }
 
 // 드롭다운 폼 컴포넌트
-const DropdownForm: React.FC<DropdownFormProps> = ({ hasSubmit, buttonText, onButtonClick }) => {
+const DropdownForm: React.FC<DropdownFormProps> = ({ isClickable, buttonText, onButtonClick }) => {
     // 선택된 옵션 상태 관리 (숫자 배열로 초기화)
     const [selectedOptions, setSelectedOptions] = useState<number[]>([0, 0, 0, 0]);
 
@@ -83,7 +89,7 @@ const DropdownForm: React.FC<DropdownFormProps> = ({ hasSubmit, buttonText, onBu
             <ButtonWrapper>
                 {/* 드롭다운 메뉴 4개 */}
                 {[...Array(4)].map((_, index) => (
-                    <Select key={index} value={selectedOptions[index]} onChange={(event) => handleOptionChange(index, event)}>
+                    <Select disabled={isClickable} key={index} value={selectedOptions[index]} onChange={(event) => handleOptionChange(index, event)}>
                         <Option value={0}></Option> {/* 초기값 0으로 설정 */}
                         {[...Array(9)].map((_, optionIndex) => (
                             <Option key={optionIndex + 1} value={optionIndex + 1}>{optionIndex + 1}</Option>
@@ -93,7 +99,7 @@ const DropdownForm: React.FC<DropdownFormProps> = ({ hasSubmit, buttonText, onBu
             </ButtonWrapper>
 
             {/* 버튼 */}
-            <Button disabled={hasSubmit} onClick={handleButtonClick}>{buttonText}</Button>
+            <Button disabled={isClickable} onClick={handleButtonClick}>{buttonText}</Button>
         </Wrapper>
     );
 };

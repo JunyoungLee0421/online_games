@@ -52,12 +52,13 @@ const P = styled.p`
 
 // 드롭다운 폼 컴포넌트 Props 정의
 interface DropdownFormProps {
+    isClickable: boolean;
     buttonText: string;
     onButtonClick: (numA: string, numB: string) => void;
 }
 
 // 드롭다운 폼 컴포넌트
-const CompareOneForm: React.FC<DropdownFormProps> = ({ buttonText, onButtonClick }) => {
+const CompareOneForm: React.FC<DropdownFormProps> = ({ isClickable, buttonText, onButtonClick }) => {
     // 선택된 옵션 상태 관리
     const [playerANumber, setPlayerANumber] = useState('');
     const [playerBNumber, setPlayerBNumber] = useState('');
@@ -98,7 +99,7 @@ const CompareOneForm: React.FC<DropdownFormProps> = ({ buttonText, onButtonClick
 
             </SelectionWrapper>
             {/* 버튼 */}
-            <Button onClick={handleButtonClick}>{buttonText}</Button>
+            <Button disabled={!isClickable} onClick={handleButtonClick}>{buttonText}</Button>
         </Wrapper>
     );
 };
