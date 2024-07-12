@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { Error, Form, Input, Title, Wrapper } from "../components/auth-components";
+import { Card, CardGroup, Error, Form, Input, Title, Wrapper } from "../components/auth-components";
 import { useState } from "react";
 import { FirebaseError } from "firebase/app";
 import { ref, set } from "firebase/database";
@@ -10,16 +10,18 @@ export default function CreateRoomSelection() {
     const [isLoading, setLoading] = useState(false);
     const [roomName, setRoomName] = useState("");
     const [error, setError] = useState("");
+    const [selection, setSelection] = useState("");
 
     const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const {
-            target: { name, value },
-        } = e;
+        const { name, value } = e.target;
         if (name === "roomName") {
             setRoomName(value);
         }
     };
 
+    const onCardClick = (value: string) => {
+        setSelection(value);
+    };
     const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setError("");
@@ -51,6 +53,17 @@ export default function CreateRoomSelection() {
         <Wrapper>
             <Title>Create a Room with Selection</Title>
             <Form onSubmit={onSubmit}>
+                <CardGroup>
+                    <Card selected={selection === "balanceGame"} onClick={() => onCardClick("balanceGame")}>
+                        Balance Game
+                    </Card>
+                    <Card selected={selection === "baseballGame"} onClick={() => onCardClick("baseballGame")}>
+                        Baseball
+                    </Card>
+                    <Card selected={selection === "blackAndWhite"} onClick={() => onCardClick("blackAndWhite")}>
+                        Black and White
+                    </Card>
+                </CardGroup>
                 <Input
                     onChange={onChange}
                     name="roomName"
@@ -59,6 +72,7 @@ export default function CreateRoomSelection() {
                     type="text"
                     required
                 />
+                <br />
                 <Input
                     type="submit"
                     value={isLoading ? "Loading..." : "Create"}

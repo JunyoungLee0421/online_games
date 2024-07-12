@@ -5,12 +5,14 @@ export const Wrapper = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  width: 420px;
+  width: 500px;
   padding: 50px 0px;
 `;
+
 export const Title = styled.h1`
-  font-size: 42px;
+  font-size: 40px;
 `;
+
 export const Form = styled.form`
   margin-top: 50px;
   margin-bottom: 10px;
@@ -19,6 +21,7 @@ export const Form = styled.form`
   gap: 10px;
   width: 100%;
 `;
+
 export const Input = styled.input`
   padding: 10px 20px;
   border-radius: 50px;
@@ -37,9 +40,34 @@ export const Error = styled.span`
   font-weight: 600;
   color: tomato;
 `;
+
 export const Switcher = styled.span`
     margin-top: 20px;
     a {
         color: #1d9bf0;
     }
+`;
+
+export const CardGroup = styled.div`
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  justify-content: space-between;
+  margin: 20px 0;
+`;
+
+export const Card = styled.div<{ selected: boolean }>`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  border-radius: 10px;
+  border: 2px solid ${props => (props.selected ? "#1d9bf0" : "black")};
+  background-color: ${props => (props.selected ? "#eaf6ff" : "white")};
+  cursor: pointer;
+  width: 100%;
+  text-align: center;
+  &:hover {
+    opacity: 0.8;
+  }
 `;
