@@ -22,24 +22,25 @@ export default function CreateRoomSelection() {
     const onCardClick = (value: string) => {
         setSelection(value);
     };
+
     const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setError("");
-        console.log("testing");
         if (isLoading || roomName === "") return;
         try {
             setLoading(true);
-            //create a room with name and id
+            console.log(selection);
+            // //create a room with name and id
             let roomId = Math.floor(100000 + Math.random() * 900000);
-            await set(ref(database, 'rooms/' + roomId), {
-                roomname: roomName,
-                playerA: {
-                    name: auth.currentUser?.displayName,
-                },
-                turn: auth.currentUser?.displayName
-            })
-            //go to game page
-            navigate("/game-room/" + roomId);
+            // await set(ref(database, 'rooms/' + roomId), {
+            //     roomname: roomName,
+            //     playerA: {
+            //         name: auth.currentUser?.displayName,
+            //     },
+            //     turn: auth.currentUser?.displayName
+            // });
+            // //go to game page
+            navigate(`/${selection}/` + roomId);
         } catch (e) {
             // setError
             if (e instanceof FirebaseError) {
@@ -49,6 +50,7 @@ export default function CreateRoomSelection() {
             setLoading(false);
         }
     };
+
     return (
         <Wrapper>
             <Title>Create a Room with Selection</Title>
@@ -60,7 +62,7 @@ export default function CreateRoomSelection() {
                     <Card selected={selection === "baseballGame"} onClick={() => onCardClick("baseballGame")}>
                         Baseball
                     </Card>
-                    <Card selected={selection === "blackAndWhite"} onClick={() => onCardClick("blackAndWhite")}>
+                    <Card selected={selection === "blackAndWhiteGame"} onClick={() => onCardClick("blackAndWhiteGame")}>
                         Black and White
                     </Card>
                 </CardGroup>

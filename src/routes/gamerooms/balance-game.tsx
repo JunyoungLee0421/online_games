@@ -1,3 +1,7 @@
+import { useParams } from "react-router-dom";
+
 export default function BalanceGame() {
-    return <h1>balance game</h1>
+    const { room_id } = useParams();
+
+    return <h1>balance game with : {room_id}</h1>
 }

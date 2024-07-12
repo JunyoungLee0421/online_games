@@ -1,3 +1,7 @@
+import { useParams } from "react-router-dom";
+
 export default function BlackAndWhiteGame() {
-    return <h1>black & white game</h1>
+    const { room_id } = useParams();
+
+    return <h1>black and white game with : {room_id}</h1>
 }

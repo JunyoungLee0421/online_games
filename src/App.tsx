@@ -52,15 +52,15 @@ const router = createBrowserRouter([
         element: <GameRoom />
       },
       {
-        path: "balanceGame",
+        path: "balanceGame/:room_id",
         element: <BalanceGame />
       },
       {
-        path: "baseballGame",
+        path: "baseballGame/:room_id",
         element: <BaseBallGame />
       },
       {
-        path: "blackAndWhiteGame",
+        path: "blackAndWhiteGame/:room_id",
         element: <BlackAndWhiteGame />
       },
     ],
