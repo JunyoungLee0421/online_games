@@ -13,6 +13,10 @@ import ProtectedRoute from "./components/protected-route";
 import CreateRoom from "./routes/create-room";
 import JoinRoom from "./routes/join-room";
 import GameRoom from "./routes/game-room";
+import CreateRoomSelection from "./routes/create-room-selection";
+import BalanceGame from "./routes/gamerooms/balance-game";
+import BaseBallGame from "./routes/gamerooms/baseball";
+import BlackAndWhiteGame from "./routes/gamerooms/black-and-white";
 
 const router = createBrowserRouter([
   {
@@ -36,13 +40,29 @@ const router = createBrowserRouter([
         element: <CreateRoom />
       },
       {
+        path: "create-room-selection",
+        element: <CreateRoomSelection />
+      },
+      {
         path: "join-room",
         element: <JoinRoom />
       },
       {
         path: "game-room/:room_id",
         element: <GameRoom />
-      }
+      },
+      {
+        path: "balanceGame",
+        element: <BalanceGame />
+      },
+      {
+        path: "baseballGame",
+        element: <BaseBallGame />
+      },
+      {
+        path: "blackAndWhiteGame",
+        element: <BlackAndWhiteGame />
+      },
     ],
   },
   {
