@@ -53,7 +53,7 @@ const RoomInfo = styled.div`
 `;
 
 const RoomName = styled.span`
-  font-size: 20px;
+  font-size: 18px;
   font-weight: bold;
   margin-bottom: 8px;
 `;
@@ -67,6 +67,7 @@ const Title = styled.h1`
   font-size: 42px;
   margin-bottom: 10px;
 `;
+
 const Error = styled.span`
   font-weight: 600;
   color: tomato;
@@ -103,7 +104,7 @@ export default function JoinRoom() {
         });
     }, []);
 
-    const onRoomClicked = async (roomId: String) => {
+    const onRoomClicked = async (gameType: String, roomId: String) => {
         setError("");
         try {
             setLoading(true);
@@ -119,7 +120,7 @@ export default function JoinRoom() {
                 console.log(error);
             })
             //go to room with room id
-            navigate("/game-room/" + roomId);
+            navigate(`/${gameType}/` + roomId);
         } catch (e) {
             //show error
             if (e instanceof FirebaseError) {
@@ -134,7 +135,7 @@ export default function JoinRoom() {
         <Wrapper>
             <Title>Join a Room</Title>
             {rooms.map((room) => (
-                <RoomButton key={room.id} onClick={() => onRoomClicked(room.id)}>
+                <RoomButton key={room.id} onClick={() => onRoomClicked(room.type, room.id)}>
                     <RoomInfo>
                         <RoomName>Name : {room.name}</RoomName>
                         <RoomType>Type : {room.type}</RoomType>
