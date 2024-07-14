@@ -15,19 +15,57 @@ const Wrapper = styled.div`
   gap: 10px;
 `;
 
-const Button = styled.button`
-  padding: 10px 20px;
+// const Button = styled.button`
+//   padding: 10px 20px;
+//   border-radius: 50px;
+//   border: none;
+//   width: 100%;
+//   font-size: 16px;
+//   cursor: pointer;
+//     &:hover {
+//       opacity: 0.8;
+//     }
+// `;
+
+const RoomButton = styled.button`
+  margin: 10px;
+  padding: 15px 25px;
   border-radius: 50px;
   border: none;
   width: 100%;
-  font-size: 16px;
+  font-size: 18px;
+  font-weight: bold;
+  color: black;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all 0.3s ease;
   cursor: pointer;
     &:hover {
       opacity: 0.8;
     }
 `;
+
+const RoomInfo = styled.div`
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+`;
+
+const RoomName = styled.span`
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 8px;
+`;
+
+const RoomType = styled.span`
+  font-size: 16px;
+  font-weight: normal;
+`;
+
 const Title = styled.h1`
   font-size: 42px;
+  margin-bottom: 10px;
 `;
 const Error = styled.span`
   font-weight: 600;
@@ -37,6 +75,7 @@ const Error = styled.span`
 interface Room {
     id: string;
     name: string;
+    type: string;
 }
 
 export default function JoinRoom() {
@@ -49,10 +88,11 @@ export default function JoinRoom() {
         const dbRef = ref(database);
         get(child(dbRef, 'rooms/')).then((snapshot) => {
             if (snapshot.exists()) {
-                const roomsData: { [key: string]: { roomname: string } } = snapshot.val();
+                const roomsData: { [key: string]: { roomname: string; gameType: string; } } = snapshot.val();
                 const roomsArray: Room[] = Object.keys(roomsData).map(roomId => ({
                     id: roomId,
                     name: roomsData[roomId].roomname,
+                    type: roomsData[roomId].gameType
                 }));
                 setRooms(roomsArray);
             } else {
@@ -93,8 +133,14 @@ export default function JoinRoom() {
     return (
         <Wrapper>
             <Title>Join a Room</Title>
-            {rooms.map(room => (
-                <Button key={room.id} onClick={() => onRoomClicked(room.id)}>{isLoading ? "Connecting..." : room.name}</Button>
+            {rooms.map((room) => (
+                <RoomButton key={room.id} onClick={() => onRoomClicked(room.id)}>
+                    <RoomInfo>
+                        <RoomName>Name : {room.name}</RoomName>
+                        <RoomType>Type : {room.type}</RoomType>
+                    </RoomInfo>
+                    {isLoading ? "Connecting..." : "Join"}
+                </RoomButton>
             ))}
             {error !== "" ? <Error>{error}</Error> : null}
         </Wrapper>

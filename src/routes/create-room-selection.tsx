@@ -32,14 +32,15 @@ export default function CreateRoomSelection() {
             console.log(selection);
             // //create a room with name and id
             let roomId = Math.floor(100000 + Math.random() * 900000);
-            // await set(ref(database, 'rooms/' + roomId), {
-            //     roomname: roomName,
-            //     playerA: {
-            //         name: auth.currentUser?.displayName,
-            //     },
-            //     turn: auth.currentUser?.displayName
-            // });
-            // //go to game page
+            await set(ref(database, 'rooms/' + roomId), {
+                roomname: roomName,
+                playerA: {
+                    name: auth.currentUser?.displayName,
+                },
+                turn: auth.currentUser?.displayName,
+                gameType: selection
+            });
+            //go to game page
             navigate(`/${selection}/` + roomId);
         } catch (e) {
             // setError
