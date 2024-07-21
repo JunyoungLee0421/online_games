@@ -117,7 +117,7 @@ export default function BalanceGame() {
         });
     }, [room_id]);
 
-    //on submit number, set the number to te db
+    //on submit number, set the number to db
     //check if there is no duplicate and all the numbers add up to 20.
     //pass it if it is, alert user and return early otherwise.
     const submitSecretNumber = async (selectedNumbers: number[]) => {

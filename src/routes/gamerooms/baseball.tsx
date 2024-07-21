@@ -1,7 +1,8 @@
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { FormWrapper, GamePlayWrapper, H1, InfoWrapper, Wrapper } from "../../components/game-room-components";
 import BaseballDropDown from "../../components/baseball-components/baseball-drop-down-form";
 import styled from "styled-components";
+import { useState } from "react";
 
 const HintWrapper = styled.div`
   width: 350px;
@@ -62,7 +63,44 @@ const TableCell = styled.td`
 `;
 
 export default function BaseBallGame() {
+    const navigate = useNavigate();
     const { room_id } = useParams();
+    const [playerA, setPlayerA] = useState("");
+    const [playerB, setPlayerB] = useState("");
+    const [currentTurn, setCurrentTurn] = useState("");
+    const [hasSubmit, setHasSubmit] = useState(false);
+    const [selfSecretNum, setSelfSecretNum] = useState<number[]>([]);
+    const [enemySecretNum, setEnemySecretNum] = useState<number[]>([]);
+
+    /**
+     * wait till guest join & getting initial data
+     */
+
+    /**
+     * submit number, set the number to db
+     * number should not start with 0
+     * no duplicates
+     */
+
+    /**
+     * set opponent number to local when its submitted to db
+     */
+
+    /**
+     * guess number
+     */
+
+    /**
+     * fetch hints and update UI
+     */
+
+    /**
+     * wait for end game call
+     */
+
+    /**
+     * turn change
+     */
 
     return (
         <Wrapper>
@@ -84,10 +122,6 @@ export default function BaseBallGame() {
                 <FormWrapper>
                     <BaseballDropDown isClickable={false} buttonText="Submit Number" onButtonClick={() => (console.log("hi"))} />
                     <BaseballDropDown isClickable={false} buttonText="Guess Number" onButtonClick={() => (console.log("hi"))} />
-                    {/* <DropdownForm isClickable={hasSubmit} buttonText="Submit Number" onButtonClick={submitSecretNumber} />
-                    <CompareOneForm isClickable={isMyTurn} buttonText="Compare" onButtonClick={compareOne} />
-                    <CompareTwoForm isClickable={isMyTurn} buttonText="Compare" onButtonClick={compareTwo} />
-                    <DropdownForm isClickable={!isMyTurn} buttonText="Guess Enemy Number" onButtonClick={guessNumber} /> */}
                 </FormWrapper>
 
                 {/* game status chart */}

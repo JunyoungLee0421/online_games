@@ -61,7 +61,7 @@ interface DropdownFormProps {
 // 드롭다운 폼 컴포넌트
 const BaseballDropDown: React.FC<DropdownFormProps> = ({ isClickable, buttonText, onButtonClick }) => {
     // 선택된 옵션 상태 관리 (숫자 배열로 초기화)
-    const [selectedOptions, setSelectedOptions] = useState<number[]>([0, 0, 0, 0]);
+    const [selectedOptions, setSelectedOptions] = useState<number[]>([0, 0, 0]);
 
     // 옵션 변경 이벤트 핸들러
     const handleOptionChange = (index: number, event: React.ChangeEvent<HTMLSelectElement>) => {
@@ -72,15 +72,6 @@ const BaseballDropDown: React.FC<DropdownFormProps> = ({ isClickable, buttonText
 
     // 버튼 클릭 이벤트 핸들러
     const handleButtonClick = () => {
-        // Check for duplicates and sum
-        const duplicates = new Set(selectedOptions).size !== selectedOptions.length;
-        const sum = selectedOptions.reduce((acc, curr) => acc + curr, 0);
-
-        if (duplicates || sum !== 20) {
-            alert("Please ensure there are no duplicate numbers and the sum is 20.");
-            return;
-        }
-
         onButtonClick(selectedOptions);
     };
 
