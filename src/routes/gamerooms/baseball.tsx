@@ -3,7 +3,7 @@ import { FormWrapper, GamePlayWrapper, H1, InfoWrapper, Wrapper } from "../../co
 import BaseballDropDown from "../../components/baseball-components/baseball-drop-down-form";
 import styled from "styled-components";
 import { useEffect, useState } from "react";
-import { child, get, onValue, ref, set } from "firebase/database";
+import { child, get, onValue, push, ref, remove, set, update } from "firebase/database";
 import { auth, database } from "../../firebase";
 
 const HintWrapper = styled.div`
@@ -64,6 +64,11 @@ const TableCell = styled.td`
   margin-bottom: 10px; /* 셀 사이 간격 */
 `;
 
+type HintType = {
+    guess: number[];
+    hint: string;
+};
+
 export default function BaseBallGame() {
     const navigate = useNavigate();
     const { room_id } = useParams();
@@ -71,8 +76,10 @@ export default function BaseBallGame() {
     const [playerB, setPlayerB] = useState("");
     const [currentTurn, setCurrentTurn] = useState("");
     const [hasSubmit, setHasSubmit] = useState(false);
-    const [selfSecretNum, setSelfSecretNum] = useState<number[]>([]);
+    // const [selfSecretNum, setSelfSecretNum] = useState<number[]>([]);
     const [enemySecretNum, setEnemySecretNum] = useState<number[]>([]);
+    const [selfHint, setSelfHint] = useState<HintType[]>([]);
+    const [enemyHint, setEnemyHint] = useState<HintType[]>([]);
 
     /**
      * wait till guest join & getting initial data
@@ -80,13 +87,11 @@ export default function BaseBallGame() {
     useEffect(() => {
         const guestRef = ref(database, `rooms/${room_id}/playerB`);
         onValue(guestRef, () => {
-            console.log("guest has entered!");
             //set host and guest name
             const dbRef = ref(database);
             get(child(dbRef, `rooms/${room_id}`)).then((snapshot) => {
                 if (snapshot.exists()) {
                     const roomData = snapshot.val();
-                    console.log(roomData);
                     setPlayerA(roomData.playerA.name);
                     setPlayerB(roomData.playerB.name);
                     setCurrentTurn(roomData.turn);
@@ -115,7 +120,7 @@ export default function BaseBallGame() {
             }).catch((error) => {
                 console.log(error);
             });
-            setSelfSecretNum(selectedNumbers);
+            //setSelfSecretNum(selectedNumbers);
             setHasSubmit(true);
         } catch (e) {
             console.log(e);
@@ -137,10 +142,7 @@ export default function BaseBallGame() {
         const enemyRef = ref(database, `rooms/${room_id}/${enemyName}/secretNumber`);
         onValue(enemyRef, (snapshot) => {
             if (snapshot.exists()) {
-                console.log("enemy has submitted secret number!");
-                console.log(snapshot.val());
                 setEnemySecretNum(snapshot.val());
-                console.log(enemySecretNum);
             } else {
                 console.log("No data available");
             }
@@ -150,25 +152,134 @@ export default function BaseBallGame() {
     /**
      * guess number
      */
+    const guessNumber = async (selectedNumbers: number[]) => {
+        const playerName = auth.currentUser?.displayName;
+
+        // calculate hint
+        let strike = 0;
+        let ball = 0;
+        selectedNumbers.forEach((num, idx) => {
+            if (num === enemySecretNum[idx]) {
+                strike++;
+            } else if (enemySecretNum.includes(num)) {
+                ball++;
+            }
+        });
+        const hint = `${strike}S ${ball}B`;
+
+        // upload hint to db
+        const dbRef = ref(database, `rooms/${room_id}/hints/${playerName}`);
+        await push(dbRef, {
+            guess: selectedNumbers,
+            hint: hint,
+        });
+
+        // when guess was correct
+        if (strike === 3) {
+            // upload db info
+            const dbRef = ref(database, `rooms/${room_id}`);
+            await update(dbRef, {
+                isGameFinished: true,
+                winner: playerName,
+            });
+            console.log('Game finished successfully');
+        } else {
+            //change turn
+            changeTurn();
+        }
+    };
 
     /**
      * fetch hints and update UI
      */
+    useEffect(() => {
+        const playerName = auth.currentUser?.displayName;
+        if (!playerName) return;
+
+        const hintsRef = ref(database, `rooms/${room_id}/hints`);
+        onValue(hintsRef, (snapshot) => {
+            const allHints = snapshot.val();
+            if (allHints) {
+                const selfHintArray: HintType[] = [];
+                const enemyHintArray: HintType[] = [];
+
+                Object.entries(allHints).forEach(([key, hintData]) => {
+                    if (key === playerName) {
+                        const hints = Object.values(hintData as { [key: string]: HintType }) as HintType[];
+                        selfHintArray.push(...hints);
+                    } else {
+                        const hints = Object.values(hintData as { [key: string]: HintType }) as HintType[];
+                        enemyHintArray.push(...hints);
+                    }
+                });
+
+                setSelfHint(selfHintArray);
+                setEnemyHint(enemyHintArray);
+            }
+        });
+    }, [room_id]);
 
     /**
      * wait for end game call
      */
+    useEffect(() => {
+        const gameFinishedRef = ref(database, `rooms/${room_id}/isGameFinished`);
+        const unsubscribe = onValue(gameFinishedRef, (snapshot) => {
+            if (snapshot.val()) {
+                const dbRef = ref(database, `rooms/${room_id}/winner`);
+                get(dbRef).then((snapshot) => {
+                    if (snapshot.exists()) {
+                        const winner = snapshot.val();
+                        const roomRef = ref(database, `rooms/${room_id}`);
+
+                        //alert user
+                        alert(`${winner} won the game!`);
+                        //delete room
+                        remove(roomRef);
+                        // Redirect to homepage
+                        navigate("/");
+
+                        // Unsubscribe the listener to prevent infinite loop
+                        unsubscribe();
+                    }
+                });
+            }
+        });
+        // Cleanup function to unsubscribe the listener
+        return () => unsubscribe();
+    }, [room_id]);
 
     /**
      * turn change
      */
+    const changeTurn = () => {
+        const nextTurn = currentTurn === playerA ? playerB : playerA;
+        update(ref(database, `rooms/${room_id}`), {
+            turn: nextTurn,
+        }).then(() => {
+            setCurrentTurn(nextTurn);
+        }).catch((error) => {
+            console.log("Error updating turn:", error);
+        });
+    };
+
+    useEffect(() => {
+        const turnRef = ref(database, `rooms/${room_id}/turn`);
+        onValue(turnRef, (snapshot) => {
+            const data = snapshot.val();
+            console.log(data);
+            setCurrentTurn(data);
+        });
+    }, [room_id]);
+
+    const isMyTurn = auth.currentUser?.displayName === currentTurn;
 
     return (
         <Wrapper>
             <InfoWrapper>
                 <H1>Game Room : {room_id}</H1>
                 <H1>Type : Baseball Game</H1>
-                {/* {playerA && playerB ? (
+                {playerA && playerB ? (
                     <>
                         <H1>Player A : {playerA}</H1>
                         <H1>Player B : {playerB}</H1>
@@ -176,13 +287,13 @@ export default function BaseBallGame() {
                 ) : (
                     <H1>Waiting for another player to join...</H1>
                 )}
-                <H1>Current Turn : {currentTurn}</H1> */}
+                <H1>Current Turn : {currentTurn}</H1>
 
             </InfoWrapper>
             <GamePlayWrapper>
                 <FormWrapper>
-                    <BaseballDropDown isClickable={false} buttonText="Submit Number" onButtonClick={submitSecretNumber} />
-                    <BaseballDropDown isClickable={false} buttonText="Guess Number" onButtonClick={() => (console.log("hi"))} />
+                    <BaseballDropDown isClickable={hasSubmit} buttonText="Submit Number" onButtonClick={submitSecretNumber} />
+                    <BaseballDropDown isClickable={!isMyTurn} buttonText="Guess Number" onButtonClick={guessNumber} />
                 </FormWrapper>
 
                 {/* game status chart */}
@@ -196,14 +307,13 @@ export default function BaseBallGame() {
                             </TableRow>
                         </thead>
                         <tbody>
-                            {/* {hints.map((hint, index) => (
+                            {selfHint.map((hint, index) => (
                                 <TableRow key={index}>
                                     <TableCell>{index + 1}</TableCell>
-                                    <TableCell>{hint.playerA}</TableCell>
-                                    <TableCell>{hint.inequality}</TableCell>
-                                    <TableCell>{hint.playerB}</TableCell>
+                                    <TableCell>{hint.guess}</TableCell>
+                                    <TableCell>{hint.hint}</TableCell>
                                 </TableRow>
-                            ))} */}
+                            ))}
                         </tbody>
                     </Table>
                 </HintWrapper>
@@ -217,14 +327,13 @@ export default function BaseBallGame() {
                             </TableRow>
                         </thead>
                         <tbody>
-                            {/* {hints.map((hint, index) => (
+                            {enemyHint.map((hint, index) => (
                                 <TableRow key={index}>
                                     <TableCell>{index + 1}</TableCell>
-                                    <TableCell>{hint.playerA}</TableCell>
-                                    <TableCell>{hint.inequality}</TableCell>
-                                    <TableCell>{hint.playerB}</TableCell>
+                                    <TableCell>{hint.guess}</TableCell>
+                                    <TableCell>{hint.hint}</TableCell>
                                 </TableRow>
-                            ))} */}
+                            ))}
                         </tbody>
                     </Table>
                 </HintWrapper>
