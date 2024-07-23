@@ -2,7 +2,9 @@ import { useNavigate, useParams } from "react-router-dom";
 import { FormWrapper, GamePlayWrapper, H1, InfoWrapper, Wrapper } from "../../components/game-room-components";
 import BaseballDropDown from "../../components/baseball-components/baseball-drop-down-form";
 import styled from "styled-components";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { child, get, onValue, ref, set } from "firebase/database";
+import { auth, database } from "../../firebase";
 
 const HintWrapper = styled.div`
   width: 350px;
@@ -75,16 +77,75 @@ export default function BaseBallGame() {
     /**
      * wait till guest join & getting initial data
      */
+    useEffect(() => {
+        const guestRef = ref(database, `rooms/${room_id}/playerB`);
+        onValue(guestRef, () => {
+            console.log("guest has entered!");
+            //set host and guest name
+            const dbRef = ref(database);
+            get(child(dbRef, `rooms/${room_id}`)).then((snapshot) => {
+                if (snapshot.exists()) {
+                    const roomData = snapshot.val();
+                    console.log(roomData);
+                    setPlayerA(roomData.playerA.name);
+                    setPlayerB(roomData.playerB.name);
+                    setCurrentTurn(roomData.turn);
+                } else {
+                    console.log("No data available");
+                }
+            }).catch((error) => {
+                console.log(error);
+            });
+        });
+    }, [room_id]);
 
     /**
      * submit number, set the number to db
      * number should not start with 0
      * no duplicates
      */
+    const submitSecretNumber = async (selectedNumbers: number[]) => {
+        try {
+            const playerName = auth.currentUser?.displayName;
+            const dbRef = ref(database, 'rooms/' + room_id + "/" + playerName);
+            await set(dbRef, {
+                secretNumber: selectedNumbers
+            }).then(() => {
+                console.log('submitted secret number successfully');
+            }).catch((error) => {
+                console.log(error);
+            });
+            setSelfSecretNum(selectedNumbers);
+            setHasSubmit(true);
+        } catch (e) {
+            console.log(e);
+        }
+    }
 
     /**
      * set opponent number to local when its submitted to db
      */
+    useEffect(() => {
+        const playerName = auth.currentUser?.displayName;
+        let enemyName = "";
+        if (playerName === playerA) {
+            enemyName = playerB;
+        } else if (playerName === playerB) {
+            enemyName = playerA;
+        }
+
+        const enemyRef = ref(database, `rooms/${room_id}/${enemyName}/secretNumber`);
+        onValue(enemyRef, (snapshot) => {
+            if (snapshot.exists()) {
+                console.log("enemy has submitted secret number!");
+                console.log(snapshot.val());
+                setEnemySecretNum(snapshot.val());
+                console.log(enemySecretNum);
+            } else {
+                console.log("No data available");
+            }
+        });
+    }, [room_id, playerA, playerB]);
 
     /**
      * guess number
@@ -120,7 +181,7 @@ export default function BaseBallGame() {
             </InfoWrapper>
             <GamePlayWrapper>
                 <FormWrapper>
-                    <BaseballDropDown isClickable={false} buttonText="Submit Number" onButtonClick={() => (console.log("hi"))} />
+                    <BaseballDropDown isClickable={false} buttonText="Submit Number" onButtonClick={submitSecretNumber} />
                     <BaseballDropDown isClickable={false} buttonText="Guess Number" onButtonClick={() => (console.log("hi"))} />
                 </FormWrapper>
 

@@ -72,6 +72,17 @@ const BaseballDropDown: React.FC<DropdownFormProps> = ({ isClickable, buttonText
 
     // 버튼 클릭 이벤트 핸들러
     const handleButtonClick = () => {
+        const uniqueOptions = new Set(selectedOptions);
+
+        if (uniqueOptions.size !== selectedOptions.length) {
+            alert('Please ensure there are no duplicate numbers.');
+            return;
+        }
+        if (selectedOptions[0] === 0) {
+            alert('First digit cannot be 0.');
+            return;
+        }
+
         onButtonClick(selectedOptions);
     };
 
@@ -81,7 +92,7 @@ const BaseballDropDown: React.FC<DropdownFormProps> = ({ isClickable, buttonText
                 {/* 드롭다운 메뉴 3개 */}
                 {[...Array(3)].map((_, index) => (
                     <Select disabled={isClickable} key={index} value={selectedOptions[index]} onChange={(event) => handleOptionChange(index, event)}>
-                        <Option value={0}></Option> {/* 초기값 0으로 설정 */}
+                        {/* <Option value={-1}></Option> 초기값 0으로 설정 */}
                         {[...Array(10)].map((_, optionIndex) => (
                             <Option key={optionIndex} value={optionIndex}>{optionIndex}</Option>
                         ))}
