@@ -1,43 +1,48 @@
 import { useNavigate } from "react-router-dom";
-import { Error, Form, Input, Title, Wrapper } from "../components/auth-components";
+import { Card, CardGroup, Error, Form, Input, Title, Wrapper } from "../components/auth-components";
 import { useState } from "react";
 import { FirebaseError } from "firebase/app";
 import { ref, set } from "firebase/database";
 import { auth, database } from "../firebase";
+import { H1 } from "../components/game-room-components";
 
 export default function CreateRoom() {
     const navigate = useNavigate();
     const [isLoading, setLoading] = useState(false);
     const [roomName, setRoomName] = useState("");
     const [error, setError] = useState("");
+    const [selection, setSelection] = useState("");
 
     const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const {
-            target: { name, value },
-        } = e;
+        const { name, value } = e.target;
         if (name === "roomName") {
             setRoomName(value);
         }
     };
 
+    const onCardClick = (value: string) => {
+        setSelection(value);
+    };
+
     const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setError("");
-        console.log("testing");
         if (isLoading || roomName === "") return;
         try {
             setLoading(true);
-            //create a room with name and id
+            console.log(selection);
+            // //create a room with name and id
             let roomId = Math.floor(100000 + Math.random() * 900000);
             await set(ref(database, 'rooms/' + roomId), {
                 roomname: roomName,
                 playerA: {
                     name: auth.currentUser?.displayName,
                 },
-                turn: auth.currentUser?.displayName
-            })
+                turn: auth.currentUser?.displayName,
+                gameType: selection
+            });
             //go to game page
-            navigate("/game-room/" + roomId);
+            navigate(`/${selection}/` + roomId);
         } catch (e) {
             // setError
             if (e instanceof FirebaseError) {
@@ -47,10 +52,24 @@ export default function CreateRoom() {
             setLoading(false);
         }
     };
+
     return (
         <Wrapper>
             <Title>Create a Room</Title>
             <Form onSubmit={onSubmit}>
+                <H1>1. Select Game Type</H1>
+                <CardGroup>
+                    <Card selected={selection === "balanceGame"} onClick={() => onCardClick("balanceGame")}>
+                        Balance Game
+                    </Card>
+                    <Card selected={selection === "baseballGame"} onClick={() => onCardClick("baseballGame")}>
+                        Baseball
+                    </Card>
+                    <Card selected={selection === "blackAndWhiteGame"} onClick={() => onCardClick("blackAndWhiteGame")}>
+                        Black and White
+                    </Card>
+                </CardGroup>
+                <H1>2. Enter Room name</H1>
                 <Input
                     onChange={onChange}
                     name="roomName"
@@ -59,6 +78,7 @@ export default function CreateRoom() {
                     type="text"
                     required
                 />
+                <br />
                 <Input
                     type="submit"
                     value={isLoading ? "Loading..." : "Create"}

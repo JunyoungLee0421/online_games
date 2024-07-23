@@ -2,9 +2,9 @@ import { useNavigate, useParams } from "react-router-dom"
 import { auth, database } from "../../firebase";
 import { child, get, onValue, push, ref, remove, set, update } from "firebase/database";
 import { useEffect, useState } from "react";
-import DropdownForm from "../../components/dropDownForm";
-import CompareOneForm from "../../components/compareOneNumber";
-import CompareTwoForm from "../../components/compareTwoNumber";
+import DropdownForm from "../../components/balance-components/dropDownForm";
+import CompareOneForm from "../../components/balance-components/compareOneNumber";
+import CompareTwoForm from "../../components/balance-components/compareTwoNumber";
 import { FormWrapper, GamePlayWrapper, H1, HintWrapper, InfoWrapper, Table, TableCell, TableHeader, TableRow, Wrapper } from "../../components/game-room-components";
 
 // const Wrapper = styled.div`

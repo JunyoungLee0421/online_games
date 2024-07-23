@@ -10,13 +10,12 @@ import { useEffect, useState } from "react";
 import LoadingScreen from "./components/loading-screen";
 import { auth } from "./firebase";
 import ProtectedRoute from "./components/protected-route";
-import CreateRoom from "./routes/create-room";
 import JoinRoom from "./routes/join-room";
 import GameRoom from "./routes/game-room";
-import CreateRoomSelection from "./routes/create-room-selection";
 import BalanceGame from "./routes/gamerooms/balance-game";
 import BaseBallGame from "./routes/gamerooms/baseball";
 import BlackAndWhiteGame from "./routes/gamerooms/black-and-white";
+import CreateRoom from "./routes/create-room";
 
 const router = createBrowserRouter([
   {
@@ -38,10 +37,6 @@ const router = createBrowserRouter([
       {
         path: "create-room",
         element: <CreateRoom />
-      },
-      {
-        path: "create-room-selection",
-        element: <CreateRoomSelection />
       },
       {
         path: "join-room",

@@ -3,9 +3,9 @@ import styled from "styled-components";
 import { auth, database } from "../firebase";
 import { child, get, onValue, push, ref, remove, set, update } from "firebase/database";
 import { useEffect, useState } from "react";
-import DropdownForm from "../components/dropDownForm";
-import CompareOneForm from "../components/compareOneNumber";
-import CompareTwoForm from "../components/compareTwoNumber";
+import DropdownForm from "../components/balance-components/dropDownForm";
+import CompareOneForm from "../components/balance-components/compareOneNumber";
+import CompareTwoForm from "../components/balance-components/compareTwoNumber";
 
 const Wrapper = styled.div`
   display: flex;

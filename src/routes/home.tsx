@@ -31,15 +31,11 @@ export default function Home() {
   const joinRoom = () => {
     navigate("/join-room")
   }
-  const createRoomTemp = () => {
-    navigate("/create-room-selection")
-  }
 
   return (
     <Wrapper>
       <Button onClick={createRoom}>Create a Room</Button>
       <Button onClick={joinRoom}>Join a Room</Button>
-      <Button onClick={createRoomTemp}>Temp Button</Button>
     </Wrapper>
   )
 }
