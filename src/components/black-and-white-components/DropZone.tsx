@@ -12,6 +12,7 @@ const DropZoneContainer = styled.div<{ isOver: boolean }>`
     display: flex;
     align-items: center;
     justify-content: center;
+    text-align: center;
     border: 2px dashed ${props => (props.isOver ? 'black' : 'gray')};
     background-color: ${props => (props.isOver ? '#e0e0e0' : '#f9f9f9')};
     transition: background-color 0.3s ease;

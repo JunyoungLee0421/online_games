@@ -1,20 +1,35 @@
 import { useParams } from "react-router-dom";
 import React, { useState } from 'react';
-import { Wrapper, GamePlayWrapper, InfoWrapper, H1 } from "../../components/game-room-components";
+import { Wrapper, InfoWrapper, H1 } from "../../components/game-room-components";
 import DnDContext from "../../components/black-and-white-components/DnDContext";
 import Card from "../../components/black-and-white-components/Card";
 import DropZone from "../../components/black-and-white-components/DropZone";
 import styled from 'styled-components';
 
+const GamePlayWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+`;
+
 const CardContainer = styled.div`
     display: flex;
     justify-content: center;
-    margin-bottom: 20px;
+    margin-top: 10px;
 `;
 
-const DroppedCardList = styled.div`
-    margin-top: 20px;
-    text-align: center;
+const DroppedCardContainer = styled.div`
+    position: absolute;
+    top: -80px;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    pointer-events: none;
 `;
 
 const DroppedCard = styled.div<{ id: number }>`
@@ -29,10 +44,12 @@ const DroppedCard = styled.div<{ id: number }>`
     display: flex;
     align-items: center;
     justify-content: center;
+    pointer-events: none;
 `;
 
 const LockInButton = styled.button`
-    margin-top: 10px;
+    width: 100px;
+    margin: 10px;
     padding: 10px 20px;
     border: none;
     background-color: #1d9bf0;
@@ -48,6 +65,8 @@ const LockInButton = styled.button`
 `;
 
 const BlackAndWhiteGame: React.FC = () => {
+    const { room_id } = useParams();
+    const [droppedCards, setDroppedCards] = useState<{ id: number, text: string }[]>([]);
     const [cards, setCards] = useState([
         { id: 0, text: '0' },
         { id: 1, text: '1' },
@@ -60,8 +79,10 @@ const BlackAndWhiteGame: React.FC = () => {
         { id: 8, text: '8' },
     ]);
 
-    const [droppedCards, setDroppedCards] = useState<{ id: number, text: string }[]>([]);
-
+    /**
+     * handle drop card
+     * @param id number of the card
+     */
     const handleDrop = (id: number) => {
         const droppedCard = cards.find((card) => card.id === id);
         if (droppedCard) {
@@ -70,27 +91,51 @@ const BlackAndWhiteGame: React.FC = () => {
         }
     };
 
+    /**
+     * when lock in
+     */
+    const handleLockIn = () => {
+        setDroppedCards([]);
+    };
+
+    /**
+     * wait till guest join & getting initial data
+     */
+
+
+    /**
+     * fetch result and update score table
+     */
+
+    /**
+     * wait for end game call
+     */
+
+    /**
+     * turn change
+     */
     return (
         <DnDContext>
             <Wrapper>
                 <InfoWrapper>
-                    <H1>Game Room</H1>
-                    <H1>Type : Baseball Game</H1>
+                    <H1>Game Room : {room_id}</H1>
+                    <H1>Type : Black and White</H1>
                 </InfoWrapper>
                 <GamePlayWrapper>
+                    <DropZone onDrop={handleDrop} />
+                    {droppedCards.length > 0 && (
+                        <DroppedCardContainer>
+                            {droppedCards.map((card) => (
+                                <DroppedCard key={card.id} id={card.id}>{card.text}</DroppedCard>
+                            ))}
+                        </DroppedCardContainer>
+                    )}
+                    <LockInButton onClick={handleLockIn}>Lock In</LockInButton>
                     <CardContainer>
                         {cards.map((card) => (
                             <Card key={card.id} id={card.id} text={card.text} />
                         ))}
                     </CardContainer>
-                    <DropZone onDrop={handleDrop} />
-                    <LockInButton>Lock In</LockInButton>
-                    <DroppedCardList>
-                        <h3>Dropped Cards</h3>
-                        {droppedCards.map((card) => (
-                            <DroppedCard key={card.id} id={card.id}>{card.text}</DroppedCard>
-                        ))}
-                    </DroppedCardList>
                 </GamePlayWrapper>
             </Wrapper>
         </DnDContext>
