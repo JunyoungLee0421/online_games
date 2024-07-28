@@ -16,6 +16,9 @@ import BalanceGame from "./routes/gamerooms/balance-game";
 import BaseBallGame from "./routes/gamerooms/baseball";
 import BlackAndWhiteGame from "./routes/gamerooms/black-and-white";
 import CreateRoom from "./routes/create-room";
+import BaseballFourDigit from "./routes/gamerooms/baseball-4digit";
+import BlackAndWhiteTwo from "./routes/gamerooms/black-and-white-two";
+import Monorail from "./routes/gamerooms/monorail";
 
 const router = createBrowserRouter([
   {
@@ -55,9 +58,22 @@ const router = createBrowserRouter([
         element: <BaseBallGame />
       },
       {
+        path: "baseballFourDigit/:room_id",
+        element: <BaseballFourDigit />
+      },
+      {
         path: "blackAndWhiteGame/:room_id",
         element: <BlackAndWhiteGame />
       },
+      {
+        path: "blackAndWhiteTwo/:room_id",
+        element: <BlackAndWhiteTwo />
+      },
+      {
+        path: "monorails/:room_id",
+        element: <Monorail />
+      },
+
     ],
   },
   {
