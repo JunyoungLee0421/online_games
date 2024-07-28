@@ -63,12 +63,23 @@ export default function CreateRoom() {
                         Balance Game
                     </Card>
                     <Card selected={selection === "baseballGame"} onClick={() => onCardClick("baseballGame")}>
-                        Baseball
+                        Baseball (3-digit)
                     </Card>
                     <Card selected={selection === "blackAndWhiteGame"} onClick={() => onCardClick("blackAndWhiteGame")}>
                         Black and White
                     </Card>
                 </CardGroup>
+                {/* <CardGroup>
+                    <Card selected={selection === "balanceGame"} onClick={() => onCardClick("balanceGame")}>
+                        Baseball (4-digit)
+                    </Card>
+                    <Card selected={selection === "baseballGame"} onClick={() => onCardClick("baseballGame")}>
+                        Monorails
+                    </Card>
+                    <Card selected={selection === "blackAndWhiteGame"} onClick={() => onCardClick("blackAndWhiteGame")}>
+                        Black and White II
+                    </Card>
+                </CardGroup> */}
                 <H1>2. Enter Room name</H1>
                 <Input
                     onChange={onChange}
