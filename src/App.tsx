@@ -19,6 +19,7 @@ import CreateRoom from "./routes/create-room";
 import BaseballFourDigit from "./routes/gamerooms/baseball-4digit";
 import BlackAndWhiteTwo from "./routes/gamerooms/black-and-white-two";
 import Monorail from "./routes/gamerooms/monorail";
+import Yahtzee from "./routes/gamerooms/Yahtzee";
 
 const router = createBrowserRouter([
   {
@@ -73,7 +74,10 @@ const router = createBrowserRouter([
         path: "monorails/:room_id",
         element: <Monorail />
       },
-
+      {
+        path: "yahtzee/:room_id",
+        element: <Yahtzee />
+      },
     ],
   },
   {

@@ -79,6 +79,9 @@ export default function CreateRoom() {
                     <Card selected={selection === "monorails"} onClick={() => onCardClick("monorails")}>
                         Monorails
                     </Card>
+                    <Card selected={selection === "yahtzee"} onClick={() => onCardClick("yahtzee")}>
+                        Yahtzee
+                    </Card>
                 </CardGroup>
                 <H1>2. Enter Room name</H1>
                 <Input
